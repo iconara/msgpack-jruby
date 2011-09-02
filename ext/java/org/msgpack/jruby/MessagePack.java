@@ -92,6 +92,8 @@ public class MessagePack {
 		return _unpack(unpacker.iterator().next(), blob.getRuntime());
 	}
 	
+	private static Field cachedMapField = null;
+	
 	private RubyObject _unpack(MessagePackObject mpo, Ruby runtime) throws IOException {
 		if (mpo.isNil()) {
 			return null;
@@ -122,9 +124,11 @@ public class MessagePack {
 			// unordered Map.
 			RubyHash hash = null;
 			try {
-				Field mapField = mpo.getClass().getDeclaredField("map");
-				mapField.setAccessible(true);
-				MessagePackObject[] keyValuePairs = (MessagePackObject[]) mapField.get(mpo);
+				if (cachedMapField == null) {
+					cachedMapField = mpo.getClass().getDeclaredField("map");
+					cachedMapField.setAccessible(true);
+				}
+				MessagePackObject[] keyValuePairs = (MessagePackObject[]) cachedMapField.get(mpo);
 				int count = keyValuePairs.length;
 				hash = RubyHash.newHash(runtime);
 				for (int i = 0; i < count; i += 2) {
