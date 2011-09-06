@@ -19,6 +19,7 @@ import org.jruby.RubyInteger;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyBignum;
+import org.jruby.RubyNil;
 import org.msgpack.Packer;
 import org.msgpack.Unpacker;
 import org.msgpack.MessagePackObject;
@@ -45,7 +46,7 @@ public class MessagePack {
 	}
 	
 	private void _pack(IRubyObject o, Packer packer) throws IOException {
-		if (o == null) {
+		if (o == null || o instanceof RubyNil) {
 			packer.packNil();
 		} else if (o instanceof RubyBoolean) {
 			packer.packBoolean((Boolean) ((RubyBoolean) o).toJava(Boolean.class));
