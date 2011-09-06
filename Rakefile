@@ -3,8 +3,12 @@ require 'bundler'
 
 Bundler::GemHelper.install_tasks
 
+task :clean do
+  rm Dir['lib/ext/**/*.class']
+end
+
 task :compile do
-  exec %(javac -cp lib/ext/msgpack-0.5.2-devel.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
+  exec %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.5.2-devel.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
 end
 
 BENCHMARK_RUBIES = ['1.9.2-p290', 'jruby-1.6.2', 'jruby-1.6.4']
