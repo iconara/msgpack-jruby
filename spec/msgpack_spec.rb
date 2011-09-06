@@ -43,7 +43,8 @@ describe MessagePack do
       ['empty hashes', {}, "\x80"],
       ['hashes', {'foo' => 'bar'}, "\x81\xA3foo\xA3bar"],
       ['hashes with mixed keys and values', {'foo' => 'bar', 3 => 'three', 'four' => 4, 'x' => ['y'], 'a' => 'b'}, "\x85\xA3foo\xA3bar\x03\xA5three\xA4four\x04\xA1x\x91\xA1y\xA1a\xA1b"],
-      ['hashes of hashes', {{'x' => {'y' => 'z'}} => 's'}, "\x81\x81\xA1x\x81\xA1y\xA1z\xA1s"]
+      ['hashes of hashes', {{'x' => {'y' => 'z'}} => 's'}, "\x81\x81\xA1x\x81\xA1y\xA1z\xA1s"],
+      ['hashes with nils', {'foo' => nil}, "\x81\xA3foo\xC0"]
     ]
   }
 
