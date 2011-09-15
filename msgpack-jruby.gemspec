@@ -8,7 +8,7 @@ require 'msgpack/version'
 Gem::Specification.new do |s|
   s.name        = 'msgpack-jruby'
   s.version     = MessagePack::VERSION
-  s.platform    = Gem::Platform::CURRENT
+  s.platform    = 'java'
   s.authors     = ['Theo Hultberg']
   s.email       = ['theo@iconara.net']
   s.homepage    = 'http://github.com/iconara/msgpack-jruby'
