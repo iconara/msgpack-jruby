@@ -13,7 +13,7 @@ require 'bson'
 if RUBY_PLATFORM.include?('java')
   BSON_IMPL = BSON::BSON_JAVA
 else
-  BSON_IMPL = BSON
+  BSON_IMPL = BSON::BSON_C
 end
 
 OBJECT_STRUCTURE = {'x' => ['y', 34, 2**30 + 3, 2.1223423423356, {'hello' => 'world', '5' => [63, 'asjdl']}]}
