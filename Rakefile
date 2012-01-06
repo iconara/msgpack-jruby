@@ -11,12 +11,23 @@ task :compile do
   exec %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.5.2-devel.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
 end
 
-BENCHMARK_RUBIES = ['1.9.2-p290', 'jruby-1.6.2', 'jruby-1.6.4']
-BENCHMARK_GEMSET = 'msgpack-jruby-benchmarking'
+namespace :benchmark do
+  BENCHMARK_RUBIES = ['1.9.2-p0', 'jruby-1.6.5']
+  BENCHMARK_GEMSET = 'msgpack-jruby-benchmarking'
 
-task :benchmark do
-  rubies = BENCHMARK_RUBIES.map { |rb| "#{rb}@#{BENCHMARK_GEMSET}" }
-  cmd = %(rvm #{rubies.join(',')} exec viiite run spec/benchmark.rb | tee benchmark | viiite report --hierarchy --regroup=bench,ruby)
-  puts cmd
-  system cmd
+  task :run do
+    rubies = BENCHMARK_RUBIES.map { |rb| "#{rb}@#{BENCHMARK_GEMSET}" }
+    cmd = %(rvm #{rubies.join(',')} exec viiite run spec/benchmark.rb | tee benchmark | viiite report --hierarchy --regroup=bench,lib,ruby)
+    puts cmd
+    system cmd
+  end
+
+  task :setup do
+    rubies = BENCHMARK_RUBIES.map { |rb| "#{rb}@#{BENCHMARK_GEMSET}" }
+    rubies.each do |ruby_version|
+      cmd = %(rvm-shell #{ruby_version} -c 'bundle check || bundle install')
+      puts cmd
+      system cmd
+    end
+  end
 end

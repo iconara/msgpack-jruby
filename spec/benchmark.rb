@@ -10,6 +10,11 @@ require 'msgpack'
 require 'json'
 require 'bson'
 
+if RUBY_PLATFORM.include?('java')
+  BSON_IMPL = BSON::BSON_JAVA
+else
+  BSON_IMPL = BSON
+end
 
 OBJECT_STRUCTURE = {'x' => ['y', 34, 2**30 + 3, 2.1223423423356, {'hello' => 'world', '5' => [63, 'asjdl']}]}
 ENCODED_MSGPACK = "\x81\xA1x\x95\xA1y\"\xCE@\x00\x00\x03\xCB@\x00\xFA\x8E\x9F9\xFA\xC1\x82\xA5hello\xA5world\xA15\x92?\xA5asjdl"
@@ -20,7 +25,7 @@ ITERATIONS = 1_00_000
 Viiite.bm do |b|
   b.variation_point :ruby, Viiite.which_ruby
   
-  [:json, :msgpack].each do |lib|
+  [:json, :bson, :msgpack].each do |lib|
     b.variation_point :lib, lib
     
   
@@ -28,7 +33,7 @@ Viiite.bm do |b|
       ITERATIONS.times do
         case lib
         when :msgpack then MessagePack.pack(OBJECT_STRUCTURE)
-        when :bson then BSON::BSON_JAVA.serialize(OBJECT_STRUCTURE).to_s
+        when :bson then BSON_IMPL.serialize(OBJECT_STRUCTURE).to_s
         when :json then OBJECT_STRUCTURE.to_json
         end
       end
@@ -38,7 +43,7 @@ Viiite.bm do |b|
       ITERATIONS.times do
         case lib
         when :msgpack then MessagePack.unpack(ENCODED_MSGPACK)
-        when :bson then BSON::BSON_JAVA.deserialize(ENCODED_BSON)
+        when :bson then BSON_IMPL.deserialize(ENCODED_BSON)
         when :json then JSON.parse(ENCODED_JSON)
         end
       end
@@ -48,7 +53,7 @@ Viiite.bm do |b|
       ITERATIONS.times do
         case lib
         when :msgpack then MessagePack.unpack(MessagePack.pack(OBJECT_STRUCTURE))
-        when :bson then BSON::BSON_JAVA.deserialize(BSON::BSON_JAVA.serialize(OBJECT_STRUCTURE).to_s)
+        when :bson then BSON_IMPL.deserialize(BSON_IMPL.serialize(OBJECT_STRUCTURE).to_s)
         when :json then JSON.parse(OBJECT_STRUCTURE.to_json)
         end
       end
@@ -58,7 +63,7 @@ Viiite.bm do |b|
       ITERATIONS.times do
         case lib
         when :msgpack then MessagePack.pack(MessagePack.unpack(ENCODED_MSGPACK))
-        when :bson then BSON::BSON_JAVA.serialize(BSON::BSON_JAVA.deserialize(ENCODED_BSON)).to_s
+        when :bson then BSON_IMPL.serialize(BSON_IMPL.deserialize(ENCODED_BSON)).to_s
         when :json then OBJECT_STRUCTURE.to_json(JSON.parse(ENCODED_JSON))
         end
       end
