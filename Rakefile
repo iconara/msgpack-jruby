@@ -8,11 +8,11 @@ task :clean do
 end
 
 task :compile do
-  exec %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.5.2-devel.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
+  exec %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.6.5-SNAPSHOT.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
 end
 
 namespace :benchmark do
-  BENCHMARK_RUBIES = ['1.9.2-p0', 'jruby-1.6.5']
+  BENCHMARK_RUBIES = ['1.9.2-p0', 'jruby-1.6.5', 'jruby-head']
   BENCHMARK_GEMSET = 'msgpack-jruby-benchmarking'
 
   task :run do

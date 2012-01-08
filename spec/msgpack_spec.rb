@@ -69,8 +69,13 @@ describe MessagePack do
   end
 
   context 'with other things' do
-    it 'raises an error on #pack' do
+    it 'raises an error on #pack with an unsupported type' do
       expect { MessagePack.pack(self) }.to raise_error(ArgumentError, /^Cannot pack type:/)
+    end
+    
+    it 'rasies an error on #unpack with garbage' do
+      pending
+      expect { MessagePack.unpack('asdka;sd') }.to raise_error(MessagePack::UnpackError)
     end
   end
 end

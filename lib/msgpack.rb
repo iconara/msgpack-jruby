@@ -2,8 +2,7 @@
 
 require 'java'
 
-$CLASSPATH << File.expand_path('../ext', __FILE__) << File.expand_path('../ext/msgpack-0.5.2-devel.jar', __FILE__)
+$CLASSPATH << File.expand_path('../ext', __FILE__)
+Dir[File.expand_path('../ext/*.jar', __FILE__)].each { |path| $CLASSPATH << path }
 
-MessagePack = org.msgpack.jruby.MessagePack
-
-require 'msgpack/unpacker'
+MessagePack = org.msgpack.jruby.MessagePackModule

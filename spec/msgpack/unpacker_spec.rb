@@ -8,6 +8,7 @@ require 'stringio'
 describe MessagePack::Unpacker do
   context 'with a buffer' do
     it 'unpacks objects fed through #feed' do
+      pending
       subject.feed(MessagePack.pack('hello' => 'world') + MessagePack.pack('foo' => 42))
       objects = []
       subject.each do |obj|
