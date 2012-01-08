@@ -8,7 +8,7 @@ task :clean do
 end
 
 task :compile do
-  exec %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.6.5-SNAPSHOT.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
+  system %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.6.5-SNAPSHOT.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
 end
 
 namespace :benchmark do
@@ -18,6 +18,12 @@ namespace :benchmark do
   task :run do
     rubies = BENCHMARK_RUBIES.map { |rb| "#{rb}@#{BENCHMARK_GEMSET}" }
     cmd = %(rvm #{rubies.join(',')} exec viiite run spec/benchmark.rb | tee benchmark | viiite report --hierarchy --regroup=bench,lib,ruby)
+    puts cmd
+    system cmd
+  end
+
+  task :quick do
+    cmd = %(IMPLEMENTATIONS=msgpack viiite run spec/benchmark.rb | viiite report --hierarchy --regroup=bench)
     puts cmd
     system cmd
   end
