@@ -14,14 +14,19 @@ import org.jruby.compiler.ir.operands.StandardError;
 
 
 public class MessagePackModule {
-  private static final MessagePackFacade facade = new MessagePackFacade();
+  private static final MessagePack msgPack = new MessagePack();
+  private static final RubyObjectUnpacker unpacker = new RubyObjectUnpacker(msgPack);
 
   public static RubyString pack(RubyObject o) throws IOException {
-    return facade.pack(o);
+    BufferPacker bufferedPacker = msgPack.createBufferPacker();
+    RubyObjectPacker packer = new RubyObjectPacker(msgPack, bufferedPacker);
+    packer.write(o);
+    Ruby runtime = o == null ? Ruby.getGlobalRuntime() : o.getRuntime();
+    return RubyString.newString(runtime, bufferedPacker.toByteArray());
   }
 
   public static RubyObject unpack(RubyString s) throws IOException {
-    return facade.unpack(s);
+    return unpacker.unpack(s);
   }
 
   public static class Unpacker {
