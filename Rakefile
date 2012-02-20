@@ -8,7 +8,7 @@ task :clean do
 end
 
 task :compile do
-  system %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.6.5-SNAPSHOT.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
+  exec %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.6.5-SNAPSHOT.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
 end
 
 namespace :benchmark do
