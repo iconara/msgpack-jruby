@@ -4,11 +4,17 @@ require 'bundler'
 Bundler::GemHelper.install_tasks
 
 task :clean do
-  rm Dir['lib/ext/**/*.class']
+  rm Dir['ext/java/**/*.class']
 end
 
 task :compile do
-  exec %(javac -source 1.6 -target 1.6 -cp lib/ext/msgpack-0.6.5-SNAPSHOT.jar:$MY_RUBY_HOME/lib/jruby.jar -d lib/ext ext/java/org/msgpack/**/*.java)
+  classpath = (Dir["lib/ext/*.jar"] + ["#{ENV['MY_RUBY_HOME']}/lib/jruby.jar"]).join(':')
+  system %(javac -Xlint:-options -source 1.6 -target 1.6 -cp #{classpath} ext/java/*.java ext/java/org/msgpack/jruby/*.java)
+end
+
+task :package => :compile do
+  class_files = Dir['ext/java/**/*.class'].map { |path| path = path.sub('ext/java/', ''); "-C ext/java '#{path}'" }
+  system %(jar cf lib/ext/msgpack_jruby.jar #{class_files.join(' ')})
 end
 
 namespace :benchmark do

@@ -18,6 +18,7 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.jruby.runtime.builtin.IRubyObject;
 
 
 public class RubyObjectPacker extends MessagePackBufferPacker {
@@ -28,7 +29,7 @@ public class RubyObjectPacker extends MessagePackBufferPacker {
     this.packer = packer;
   }
 
-  public Packer write(RubyObject o) throws IOException {
+  public Packer write(IRubyObject o) throws IOException {
     if (o == null || o instanceof RubyNil) {
       packer.writeNil();
       return this;
