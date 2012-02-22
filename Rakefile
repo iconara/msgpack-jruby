@@ -10,11 +10,13 @@ end
 task :compile do
   classpath = (Dir["lib/ext/*.jar"] + ["#{ENV['MY_RUBY_HOME']}/lib/jruby.jar"]).join(':')
   system %(javac -Xlint:-options -source 1.6 -target 1.6 -cp #{classpath} ext/java/*.java ext/java/org/msgpack/jruby/*.java)
+  exit($?.exitstatus) unless $?.success?
 end
 
 task :package => :compile do
   class_files = Dir['ext/java/**/*.class'].map { |path| path = path.sub('ext/java/', ''); "-C ext/java '#{path}'" }
   system %(jar cf lib/ext/msgpack_jruby.jar #{class_files.join(' ')})
+  exit($?.exitstatus) unless $?.success?
 end
 
 namespace :benchmark do
