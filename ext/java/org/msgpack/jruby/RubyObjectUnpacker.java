@@ -37,13 +37,13 @@ public class RubyObjectUnpacker {
     this.msgPack = msgPack;
   }
 
-  public RubyObject unpack(RubyString str) throws IOException {
+  public IRubyObject unpack(RubyString str) throws IOException {
     MessagePackBufferUnpacker unpacker = new MessagePackBufferUnpacker(msgPack);
     unpacker.wrap(str.getBytes());
-    return (RubyObject) valueToRubyObject(str.getRuntime(), unpacker.readValue());
+    return valueToRubyObject(str.getRuntime(), unpacker.readValue());
   }
 
-  private IRubyObject valueToRubyObject(Ruby runtime, Value value) {
+  IRubyObject valueToRubyObject(Ruby runtime, Value value) {
     switch (value.getType()) {
     case NIL:
       return runtime.getNil();
