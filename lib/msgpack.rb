@@ -1,9 +1,8 @@
 # encoding: utf-8
 
+$: << File.expand_path('../ext', __FILE__)
+
 require 'java'
-
-$CLASSPATH << File.expand_path('../ext', __FILE__) << File.expand_path('../ext/msgpack-0.5.2-devel.jar', __FILE__)
-
-MessagePack = org.msgpack.jruby.MessagePack
-
-require 'msgpack/unpacker'
+require 'javassist-3.15.0-GA'
+require 'msgpack-0.6.5'
+require 'msgpack_jruby'
