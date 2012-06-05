@@ -38,9 +38,13 @@ public class RubyObjectUnpacker {
   }
 
   public IRubyObject unpack(RubyString str) throws IOException {
+    return unpack(str.getRuntime(), str.getBytes());
+  }
+
+  public IRubyObject unpack(Ruby runtime, byte[] data) throws IOException {
     MessagePackBufferUnpacker unpacker = new MessagePackBufferUnpacker(msgPack);
-    unpacker.wrap(str.getBytes());
-    return valueToRubyObject(str.getRuntime(), unpacker.readValue());
+    unpacker.wrap(data);
+    return valueToRubyObject(runtime, unpacker.readValue()); 
   }
 
   IRubyObject valueToRubyObject(Ruby runtime, Value value) {
