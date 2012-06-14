@@ -149,4 +149,11 @@ describe ::MessagePack::Unpacker do
       it 'is unclear what it is supposed to do'
     end
   end
+
+  context 'regressions' do
+    it 'handles massive arrays (issue #2)' do
+      array = ['foo'] * 10_000
+      MessagePack.unpack(MessagePack.pack(array)).should have(10_000).items
+    end
+  end
 end
