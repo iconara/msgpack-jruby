@@ -1,7 +1,8 @@
-require 'bundler'
+$: << 'lib'
 
+require 'bundler/setup'
+require 'msgpack/version'
 
-Bundler::GemHelper.install_tasks
 
 task :clean do
   rm Dir['ext/java/**/*.class']
@@ -17,6 +18,14 @@ task :package => :compile do
   class_files = Dir['ext/java/**/*.class'].map { |path| path = path.sub('ext/java/', ''); "-C ext/java '#{path}'" }
   system %(jar cf lib/ext/msgpack_jruby.jar #{class_files.join(' ')})
   exit($?.exitstatus) unless $?.success?
+end
+
+task :release do
+  version_string = "v#{MessagePack::VERSION}"
+  unless %x(git tag -l).include?(version_string)
+    system %(git tag -a #{version_string} -m #{version_string})
+  end
+  system %(gem build msgpack-jruby.gemspec && gem push msgpack-jruby-*.gem && mv msgpack-jruby-*.gem pkg)
 end
 
 namespace :benchmark do
