@@ -38,17 +38,45 @@ public class RubyObjectUnpacker {
     this.msgPack = msgPack;
   }
 
+  public static class CompiledOptions {
+    public final boolean symbolizeKeys;
+
+    public CompiledOptions() {
+      this(null);
+    }
+
+    public CompiledOptions(RubyHash options) {
+      if (options == null) {
+        symbolizeKeys = false;
+      } else {
+        Ruby runtime = options.getRuntime();
+        ThreadContext ctx = runtime.getCurrentContext();
+        RubySymbol key = runtime.newSymbol("symbolize_keys");
+        IRubyObject value = options.fastARef(key);
+        symbolizeKeys = value != null && value.isTrue();
+      }
+    }
+  }
+
   public IRubyObject unpack(RubyString str, RubyHash options) throws IOException {
-    return unpack(str.getRuntime(), str.getBytes(), options);
+    return unpack(str.getRuntime(), str.getBytes(), new CompiledOptions(options));
   }
 
   public IRubyObject unpack(Ruby runtime, byte[] data, RubyHash options) throws IOException {
+    return unpack(runtime, data, new CompiledOptions(options));
+  }
+
+  public IRubyObject unpack(Ruby runtime, byte[] data, CompiledOptions options) throws IOException {
     MessagePackBufferUnpacker unpacker = new MessagePackBufferUnpacker(msgPack);
     unpacker.wrap(data);
     return valueToRubyObject(runtime, unpacker.readValue(), options);
   }
 
-  IRubyObject valueToRubyObject(Ruby runtime, Value value, RubyHash options) {
+  IRubyObject valueToRubyObject(Ruby runtime, Value value, RubyHash options) throws IOException {
+    return valueToRubyObject(runtime, value, new CompiledOptions(options));
+  }
+
+  IRubyObject valueToRubyObject(Ruby runtime, Value value, CompiledOptions options) {
     switch (value.getType()) {
     case NIL:
       return runtime.getNil();
@@ -87,7 +115,7 @@ public class RubyObjectUnpacker {
     return RubyFloat.newFloat(runtime, value.asFloatValue().getDouble());
   }
 
-  private IRubyObject convert(Ruby runtime, ArrayValue value, RubyHash options) {
+  private IRubyObject convert(Ruby runtime, ArrayValue value, CompiledOptions options) {
     Value[] elements = value.asArrayValue().getElementArray();
     int elementCount = elements.length;
     IRubyObject[] rubyObjects = new IRubyObject[elementCount];
@@ -97,7 +125,7 @@ public class RubyObjectUnpacker {
     return RubyArray.newArray(runtime, rubyObjects);
   }
 
-  private IRubyObject convert(Ruby runtime, MapValue value, RubyHash options) {
+  private IRubyObject convert(Ruby runtime, MapValue value, CompiledOptions options) {
     Value[] keysAndValues = value.asMapValue().getKeyValueArray();
     int kvCount = keysAndValues.length;
     RubyHash hash = RubyHash.newHash(runtime);
@@ -106,7 +134,7 @@ public class RubyObjectUnpacker {
       Value v = keysAndValues[i + 1];
       IRubyObject kk = valueToRubyObject(runtime, k, options);
       IRubyObject vv = valueToRubyObject(runtime, v, options);
-      if (symbolizeKeysEnabled(options)) {
+      if (options.symbolizeKeys) {
         kk = runtime.newSymbol(kk.asString().getByteList());
       }
       hash.put(kk, vv);
@@ -116,21 +144,5 @@ public class RubyObjectUnpacker {
 
   private IRubyObject convert(Ruby runtime, RawValue value) {
     return RubyString.newString(runtime, value.asRawValue().getByteArray());
-  }
-
-  private boolean symbolizeKeysEnabled(RubyHash options) {
-    if (options == null) {
-      return false;
-    } else {
-      Ruby runtime = options.getRuntime();
-      ThreadContext ctx = runtime.getCurrentContext();
-      RubySymbol key = runtime.newSymbol("symbolize_keys");
-      IRubyObject value = options.fastARef(key);
-      if (value == null) {
-        return false;
-      } else {
-        return value.isTrue();
-      }
-    }
   }
 }
