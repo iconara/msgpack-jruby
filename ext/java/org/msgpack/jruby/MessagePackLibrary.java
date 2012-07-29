@@ -54,13 +54,12 @@ public class MessagePackLibrary implements Library {
   @JRubyModule(name = "MessagePack")
   public static class MessagePackModule {
     private static MessagePack msgPack = new MessagePack();
+    private static RubyObjectPacker packer = new RubyObjectPacker(msgPack);
     private static RubyObjectUnpacker unpacker = new RubyObjectUnpacker(msgPack);
     
     @JRubyMethod(module = true, required = 1)
     public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject obj) throws IOException {
-      BufferPacker bufferedPacker = msgPack.createBufferPacker();
-      Packer packer = new RubyObjectPacker(msgPack, bufferedPacker).write(obj);
-      return RubyString.newString(ctx.getRuntime(), bufferedPacker.toByteArray());
+      return packer.pack(obj);
     }
     
     @JRubyMethod(module = true, required = 1)
@@ -182,7 +181,7 @@ public class MessagePackLibrary implements Library {
         }
         return ctx.getRuntime().getNil();
       } else {
-        return RubyEnumerator.RubyEnumeratorKernel.obj_to_enum(ctx, this, Block.NULL_BLOCK);
+        return RubyEnumerator.RubyEnumeratorKernel.obj_to_enum(ctx, this);
       }
     }
 

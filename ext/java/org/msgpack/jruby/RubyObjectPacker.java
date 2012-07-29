@@ -4,8 +4,7 @@ package org.msgpack.jruby;
 import java.io.IOException;
 
 import org.msgpack.MessagePack;
-import org.msgpack.packer.Packer;
-import org.msgpack.packer.MessagePackBufferPacker;
+import org.msgpack.packer.BufferPacker;
 
 import org.jruby.RubyObject;
 import org.jruby.RubyNil;
@@ -21,91 +20,91 @@ import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
 
 
-public class RubyObjectPacker extends MessagePackBufferPacker {
-  private final Packer packer;
+public class RubyObjectPacker {
+  private final MessagePack msgPack;
 
-  public RubyObjectPacker(MessagePack msgPack, Packer packer) {
-    super(msgPack);
-    this.packer = packer;
+  public RubyObjectPacker(MessagePack msgPack) {
+    this.msgPack = msgPack;
   }
 
-  public Packer write(IRubyObject o) throws IOException {
+  public RubyString pack(IRubyObject o) throws IOException {
+    return RubyString.newString(o.getRuntime(), packRaw(o));
+  }
+
+  public byte[] packRaw(IRubyObject o) throws IOException {
+    BufferPacker packer = msgPack.createBufferPacker();
+    write(packer, o);
+    return packer.toByteArray();
+  }
+
+  private void write(BufferPacker packer, IRubyObject o) throws IOException {
     if (o == null || o instanceof RubyNil) {
       packer.writeNil();
-      return this;
     } else if (o instanceof RubyBoolean) {
       packer.write(((RubyBoolean) o).isTrue());
-      return this;
     } else if (o instanceof RubyBignum) {
-      return write((RubyBignum) o);
+      write(packer, (RubyBignum) o);
     } else if (o instanceof RubyInteger) {
-      return write((RubyInteger) o);
+      write(packer, (RubyInteger) o);
     } else if (o instanceof RubyFixnum) {
-      return write((RubyFixnum) o);
+      write(packer, (RubyFixnum) o);
     } else if (o instanceof RubyFloat) {
-      return write((RubyFloat) o);
+      write(packer, (RubyFloat) o);
     } else if (o instanceof RubyString) {
-      return write((RubyString) o);
+      write(packer, (RubyString) o);
     } else if (o instanceof RubySymbol) {
-      return write((RubySymbol) o);
+      write(packer, (RubySymbol) o);
     } else if (o instanceof RubyArray) {
-      return write((RubyArray) o);
+      write(packer, (RubyArray) o);
     } else if (o instanceof RubyHash) {
-      return write((RubyHash) o);
+      write(packer, (RubyHash) o);
     } else {
       throw o.getRuntime().newArgumentError(String.format("Cannot pack type: %s", o.getClass().getName()));
     }
   }
 
-  public final Packer write(RubyBignum bignum) throws IOException {
+  private void write(BufferPacker packer, RubyBignum bignum) throws IOException {
     packer.write(bignum.getBigIntegerValue());
-    return this;
   }
 
-  public final Packer write(RubyInteger integer) throws IOException {
+  private void write(BufferPacker packer, RubyInteger integer) throws IOException {
     packer.write(integer.getLongValue());
-    return this;
   }
 
-  public final Packer write(RubyFixnum fixnum) throws IOException {
+  private void write(BufferPacker packer, RubyFixnum fixnum) throws IOException {
     packer.write(fixnum.getLongValue());
-    return this;
   }
 
-  public final Packer write(RubyFloat flt) throws IOException {
+  private void write(BufferPacker packer, RubyFloat flt) throws IOException {
     packer.write(flt.getDoubleValue());
-    return this;
   }
 
-  public final Packer write(RubyString str) throws IOException {
+  private void write(BufferPacker packer, RubyString str) throws IOException {
     packer.write(str.getBytes());
-    return this;
   }
 
-  public final Packer write(RubySymbol sym) throws IOException {
-    return write((RubyString) sym.to_s());
+  private void write(BufferPacker packer, RubySymbol sym) throws IOException {
+    write(packer, (RubyString) sym.to_s());
   }
 
-  public final Packer write(RubyArray array) throws IOException {
+  private void write(BufferPacker packer, RubyArray array) throws IOException {
     int count = array.size();
     packer.writeArrayBegin(count);
     for (int i = 0; i < count; i++) {
-      write((RubyObject) array.entry(i));
+      write(packer, (RubyObject) array.entry(i));
     }
     packer.writeArrayEnd();
-    return this;
   }
 
-  public final Packer write(RubyHash hash) throws IOException {
+  private void write(BufferPacker packer, RubyHash hash) throws IOException {
     int count = hash.size();
     packer.writeMapBegin(count);
     RubyArray keys = hash.keys();
     RubyArray values = hash.rb_values();
     for (int i = 0; i < count; i++) {
-      write((RubyObject) keys.entry(i));
-      write((RubyObject) values.entry(i));
+      write(packer, (RubyObject) keys.entry(i));
+      write(packer, (RubyObject) values.entry(i));
     }
     packer.writeMapEnd();
-    return this;
   }
 }
