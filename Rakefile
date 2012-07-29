@@ -31,16 +31,17 @@ end
 namespace :benchmark do
   BENCHMARK_RUBIES = ['1.9.2-p0', 'jruby-1.6.5', 'jruby-head']
   BENCHMARK_GEMSET = 'msgpack-jruby-benchmarking'
+  BENCHMARK_FILE = 'spec/benchmarks/shootout_bm.rb'
 
   task :run do
     rubies = BENCHMARK_RUBIES.map { |rb| "#{rb}@#{BENCHMARK_GEMSET}" }
-    cmd = %(rvm #{rubies.join(',')} exec viiite run spec/benchmark.rb | tee benchmark | viiite report --hierarchy --regroup=bench,lib,ruby)
+    cmd = %(rvm #{rubies.join(',')} exec viiite run #{BENCHMARK_FILE} | tee benchmark | viiite report --hierarchy --regroup=bench,lib,ruby)
     puts cmd
     system cmd
   end
 
   task :quick do
-    cmd = %(IMPLEMENTATIONS=msgpack viiite run spec/benchmark.rb | viiite report --hierarchy --regroup=bench)
+    cmd = %(IMPLEMENTATIONS=msgpack viiite run #{BENCHMARK_FILE} | viiite report --hierarchy --regroup=bench)
     puts cmd
     system cmd
   end

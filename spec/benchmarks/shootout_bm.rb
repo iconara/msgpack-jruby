@@ -2,7 +2,7 @@
 
 if RUBY_PLATFORM.include?('java')
   # JRuby should use this library, MRI should use the standard gem
-  $: << File.expand_path('../../lib', __FILE__)
+  $: << File.expand_path('../../../lib', __FILE__)
 end
 
 require 'viiite'
