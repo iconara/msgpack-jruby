@@ -10,6 +10,7 @@ import org.jruby.RubyModule;
 import org.jruby.RubyClass;
 import org.jruby.RubyString;
 import org.jruby.RubyObject;
+import org.jruby.RubyHash;
 import org.jruby.RubyIO;
 import org.jruby.RubyStringIO;
 import org.jruby.RubyNumeric;
@@ -62,9 +63,11 @@ public class MessagePackLibrary implements Library {
       return packer.pack(obj);
     }
     
-    @JRubyMethod(module = true, required = 1)
-    public static IRubyObject unpack(ThreadContext ctx, IRubyObject recv, IRubyObject obj) throws IOException {
-      return unpacker.unpack(obj.asString());
+    @JRubyMethod(module = true, required = 1, optional = 1)
+    public static IRubyObject unpack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
+      RubyHash options = (args.length == 2) ? (RubyHash) args[1] : null;
+      RubyString str = args[0].asString();
+      return unpacker.unpack(str, options);
     }
   }
 
@@ -88,6 +91,7 @@ public class MessagePackLibrary implements Library {
     private MessagePackUnpacker streamUnpacker;
     private IRubyObject stream;
     private IRubyObject data;
+    private RubyHash options;
     
     public Unpacker(Ruby runtime, RubyClass type, MessagePack msgPack) {
       super(runtime, type);
@@ -99,10 +103,17 @@ public class MessagePackLibrary implements Library {
       this.data = null;
     }
 
-    @JRubyMethod(name = "initialize", optional = 1, visibility = PRIVATE)
+    @JRubyMethod(name = "initialize", optional = 2, visibility = PRIVATE)
     public IRubyObject initialize(ThreadContext ctx, IRubyObject[] args) {
-      if (args.length > 0) {
+      if (args.length == 0) {
+        options = null;
+      } else if (args.length == 1 && args[0] instanceof RubyHash) {
+        options = (RubyHash) args[0];
+      } else if (args.length > 0) {
         setStream(ctx, args[0]);
+        if (args.length > 2) {
+          options = (RubyHash) args[1];
+        }
       }
       return this;
     }
@@ -124,7 +135,7 @@ public class MessagePackLibrary implements Library {
         byte[] bytes = data.asString().getBytes();
         MessagePackBufferUnpacker localBufferUnpacker = new MessagePackBufferUnpacker(msgPack, bytes.length);
         localBufferUnpacker.wrap(bytes, jOffset, jLimit == -1 ? bytes.length - jOffset : jLimit);
-        this.data = rubyObjectUnpacker.valueToRubyObject(ctx.getRuntime(), localBufferUnpacker.readValue());
+        this.data = rubyObjectUnpacker.valueToRubyObject(ctx.getRuntime(), localBufferUnpacker.readValue(), options);
         return ctx.getRuntime().newFixnum(jOffset + localBufferUnpacker.getReadByteCount());
       } catch (IOException ioe) {
         // TODO: how to throw Ruby exceptions?
@@ -176,7 +187,7 @@ public class MessagePackLibrary implements Library {
       }
       if (block.isGiven()) {
         for (Value value : localUnpacker) {
-          IRubyObject rubyObject = rubyObjectUnpacker.valueToRubyObject(ctx.getRuntime(), value);
+          IRubyObject rubyObject = rubyObjectUnpacker.valueToRubyObject(ctx.getRuntime(), value, options);
           block.yield(ctx, rubyObject);
         }
         return ctx.getRuntime().getNil();

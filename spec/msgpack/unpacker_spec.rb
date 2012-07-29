@@ -156,4 +156,38 @@ describe ::MessagePack::Unpacker do
       MessagePack.unpack(MessagePack.pack(array)).should have(10_000).items
     end
   end
+
+  context 'extensions' do
+    context 'symbolized keys' do
+      let :buffer do
+        MessagePack.pack({'hello' => 'world', 'nested' => ['object', {'structure' => true}]})
+      end
+
+      let :unpacker do
+        described_class.new(:symbolize_keys => true)
+      end
+
+      it 'can symbolize keys when using #execute' do
+        unpacker.execute(buffer, 0)
+        unpacker.data.should == {:hello => 'world', :nested => ['object', {:structure => true}]}
+      end
+
+      it 'can symbolize keys when using #each' do
+        objs = []
+        unpacker.feed(buffer)
+        unpacker.each do |obj|
+          objs << obj
+        end
+        objs.should == [{:hello => 'world', :nested => ['object', {:structure => true}]}]
+      end
+
+      it 'can symbolize keys when using #feed_each' do
+        objs = []
+        unpacker.feed_each(buffer) do |obj|
+          objs << obj
+        end
+        objs.should == [{:hello => 'world', :nested => ['object', {:structure => true}]}]
+      end
+    end
+  end
 end

@@ -78,4 +78,12 @@ describe MessagePack do
       expect { MessagePack.unpack('asdka;sd') }.to raise_error(MessagePack::UnpackError)
     end
   end
+
+  context 'extensions' do
+    it 'can unpack hashes with symbolized keys' do
+      packed = MessagePack.pack({'hello' => 'world', 'nested' => ['object', {'structure' => true}]})
+      unpacked = MessagePack.unpack(packed, :symbolize_keys => true)
+      unpacked.should == {:hello => 'world', :nested => ['object', {:structure => true}]}
+    end
+  end
 end
