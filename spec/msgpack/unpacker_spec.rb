@@ -191,7 +191,6 @@ describe ::MessagePack::Unpacker do
     end
 
     context 'encoding' do
-
       def flatten(struct, results = [])
         case struct
         when Array
