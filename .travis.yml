@@ -4,3 +4,7 @@ rvm:
   - jruby-1.6.8
   - jruby-1.7.0
   - jruby-1.7.1
+jdk:
+  - openjdk7
+  - oraclejdk7
+  - openjdk6
