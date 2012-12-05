@@ -20,7 +20,7 @@ task :package => :compile do
   exit($?.exitstatus) unless $?.success?
 end
 
-task :release do
+task :release => :package do
   version_string = "v#{MessagePack::VERSION}"
   unless %x(git tag -l).include?(version_string)
     system %(git tag -a #{version_string} -m #{version_string})
