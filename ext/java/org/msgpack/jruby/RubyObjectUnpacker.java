@@ -30,6 +30,8 @@ import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.ThreadContext;
 
+import org.jcodings.Encoding;
+
 
 public class RubyObjectUnpacker {
   private final MessagePack msgPack;
@@ -40,6 +42,7 @@ public class RubyObjectUnpacker {
 
   public static class CompiledOptions {
     public final boolean symbolizeKeys;
+    public final Encoding encoding;
 
     public CompiledOptions() {
       this(null);
@@ -48,12 +51,15 @@ public class RubyObjectUnpacker {
     public CompiledOptions(RubyHash options) {
       if (options == null) {
         symbolizeKeys = false;
+        encoding = null;
       } else {
         Ruby runtime = options.getRuntime();
         ThreadContext ctx = runtime.getCurrentContext();
         RubySymbol key = runtime.newSymbol("symbolize_keys");
         IRubyObject value = options.fastARef(key);
         symbolizeKeys = value != null && value.isTrue();
+        IRubyObject rubyEncoding = options.fastARef(runtime.newSymbol("encoding"));
+        encoding = runtime.getEncodingService().getEncodingFromObject(rubyEncoding);
       }
     }
   }
@@ -91,7 +97,7 @@ public class RubyObjectUnpacker {
     case MAP:
       return convert(runtime, value.asMapValue(), options);
     case RAW:
-      return convert(runtime, value.asRawValue());
+      return convert(runtime, value.asRawValue(), options);
     default:
       throw runtime.newArgumentError(String.format("Unexpected value: %s", value.toString()));
     }
@@ -142,7 +148,11 @@ public class RubyObjectUnpacker {
     return hash;
   }
 
-  private IRubyObject convert(Ruby runtime, RawValue value) {
-    return RubyString.newString(runtime, value.asRawValue().getByteArray());
+  private IRubyObject convert(Ruby runtime, RawValue value, CompiledOptions options) {
+    RubyString string = RubyString.newString(runtime, value.asRawValue().getByteArray());
+    if (options.encoding != null) {
+      string.setEncoding(options.encoding);
+    }
+    return string;
   }
 }
