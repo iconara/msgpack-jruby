@@ -2,7 +2,7 @@ language: ruby
 rvm:
   - jruby-18mode
   - jruby-19mode
-  - jruby-1.7.1
+  - jruby-1.7.0
   - jruby-head
 jdk:
   - openjdk7
