@@ -189,5 +189,57 @@ describe ::MessagePack::Unpacker do
         objs.should == [{:hello => 'world', :nested => ['object', {:structure => true}]}]
       end
     end
+
+    context 'encoding' do
+
+      def flatten(struct, results = [])
+        case struct
+        when Array
+          struct.each { |v| flatten(v, results) }
+        when Hash
+          struct.each { |k, v| flatten(v, flatten(k, results)) }
+        else
+          results << struct
+        end
+        results
+      end
+
+      let :buffer do
+        MessagePack.pack({'hello' => 'world', 'nested' => ['object', {'structure' => true}]})
+      end
+
+      let :unpacker do
+        described_class.new(:encoding => 'UTF-8')
+      end
+
+      it 'can symbolize keys when using #execute' do
+        unpacker.execute(buffer, 0)
+        strings = flatten(unpacker.data).grep(String)
+        strings.should == %w[hello world nested object structure]
+        strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
+      end
+
+      it 'can symbolize keys when using #each' do
+        objs = []
+        unpacker.feed(buffer)
+        unpacker.each do |obj|
+          objs << obj
+        end
+        strings = flatten(objs).grep(String)
+        strings.should == %w[hello world nested object structure]
+        strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
+      end
+
+      it 'can symbolize keys when using #feed_each' do
+        objs = []
+        unpacker.feed_each(buffer) do |obj|
+          objs << obj
+        end
+        strings = flatten(objs).grep(String)
+        strings.should == %w[hello world nested object structure]
+        strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
+      end
+    end
+
   end
 end
