@@ -1,0 +1,6 @@
+language: ruby
+rvm:
+  - jruby-1.6.5
+  - jruby-1.6.8
+  - jruby-1.7.0
+  - jruby-1.7.1
