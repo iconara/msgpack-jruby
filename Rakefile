@@ -1,8 +1,15 @@
 $: << 'lib'
 
 require 'bundler/setup'
+require 'rspec/core/rake_task'
 require 'msgpack/version'
 
+
+task :default => :spec
+
+RSpec::Core::RakeTask.new(:spec)
+
+task :spec => :package
 
 task :clean do
   rm Dir['ext/java/**/*.class']

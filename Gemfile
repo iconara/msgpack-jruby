@@ -1,6 +1,11 @@
 source :rubygems
 
-gem 'jruby-openssl'
+gemspec
+
+group :development do
+  gem 'jruby-openssl'
+  gem 'rake'
+end
 
 group :test do
   gem 'rspec'
