@@ -2,3 +2,4 @@
 .bundle
 pkg/*
 /benchmark
+/lib/ext/msgpack_jruby.jar
