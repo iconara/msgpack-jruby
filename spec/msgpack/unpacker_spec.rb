@@ -130,6 +130,17 @@ describe ::MessagePack::Unpacker do
       end
       objects.should == [{'foo' => 'bar'}, {'hello' => {'world' => [1, 2, 3]}}, {'x' => 'y'}]
     end
+
+    it 'handles chunked data' do
+      objects = []
+      buffer = buffer1 + buffer2 + buffer3
+      buffer.chars.each do |ch|
+        subject.feed_each(ch) do |obj|
+          objects << obj
+        end
+      end
+      objects.should == [{'foo' => 'bar'}, {'hello' => {'world' => [1, 2, 3]}}, {'x' => 'y'}]
+    end
   end
   
   describe '#fill' do
