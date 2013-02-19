@@ -89,6 +89,7 @@ public class MessagePackLibrary implements Library {
     private RubyObjectUnpacker rubyObjectUnpacker;
     private MessagePackBufferUnpacker bufferUnpacker;
     private MessagePackUnpacker streamUnpacker;
+    private UnpackerIterator unpackerIterator;
     private IRubyObject stream;
     private IRubyObject data;
     private RubyObjectUnpacker.CompiledOptions options;
@@ -165,6 +166,7 @@ public class MessagePackLibrary implements Library {
       byte[] bytes = data.asString().getBytes();
       if (bufferUnpacker == null) {
         bufferUnpacker = new MessagePackBufferUnpacker(msgPack);
+        unpackerIterator = bufferUnpacker.iterator();
       }
       bufferUnpacker.feed(bytes);
       return ctx.getRuntime().getNil();
@@ -188,7 +190,8 @@ public class MessagePackLibrary implements Library {
         return ctx.getRuntime().getNil();
       }
       if (block.isGiven()) {
-        for (Value value : localUnpacker) {
+        while (unpackerIterator.hasNext()) {
+          Value value = unpackerIterator.next();
           IRubyObject rubyObject = rubyObjectUnpacker.valueToRubyObject(ctx.getRuntime(), value, options);
           block.yield(ctx, rubyObject);
         }
@@ -235,6 +238,7 @@ public class MessagePackLibrary implements Library {
       } else {
         streamUnpacker = new MessagePackUnpacker(msgPack, new IOInputStream(stream));
       }
+      unpackerIterator = streamUnpacker.iterator();
       return getStream(ctx);
     }
   }
