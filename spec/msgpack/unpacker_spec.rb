@@ -201,7 +201,7 @@ describe ::MessagePack::Unpacker do
       end
     end
 
-    context 'encoding' do
+    context 'encoding', :encodings do
       def flatten(struct, results = [])
         case struct
         when Array
@@ -250,6 +250,5 @@ describe ::MessagePack::Unpacker do
         strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
       end
     end
-
   end
 end

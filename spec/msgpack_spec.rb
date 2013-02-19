@@ -86,7 +86,7 @@ describe MessagePack do
       unpacked.should == {:hello => 'world', :nested => ['object', {:structure => true}]}
     end
 
-    it 'can unpack strings with a specified encoding' do
+    it 'can unpack strings with a specified encoding', :encodings do
       packed = MessagePack.pack({'hello' => 'world'})
       unpacked = MessagePack.unpack(packed, :encoding => Encoding::UTF_8)
       unpacked['hello'].encoding.should == Encoding::UTF_8
