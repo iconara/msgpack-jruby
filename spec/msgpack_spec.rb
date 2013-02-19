@@ -1,6 +1,6 @@
 # encoding: ascii-8bit
 
-require_relative 'spec_helper'
+require 'spec_helper'
 
 
 describe MessagePack do

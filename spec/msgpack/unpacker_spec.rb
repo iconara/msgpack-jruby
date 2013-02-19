@@ -1,8 +1,8 @@
 # encoding: ascii-8bit
 
-require_relative '../spec_helper'
 require 'stringio'
 require 'tempfile'
+require 'spec_helper'
 
 
 describe ::MessagePack::Unpacker do
