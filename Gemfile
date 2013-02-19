@@ -2,9 +2,10 @@ source :rubygems
 
 gemspec
 
+gem 'rake'
+
 group :development do
   gem 'jruby-openssl'
-  gem 'rake'
   gem 'viiite'
   gem 'ffi-ncurses'
   gem 'bson'
