@@ -8,3 +8,4 @@ jdk:
   - openjdk7
   - oraclejdk7
   - openjdk6
+bundler_args: --without development
