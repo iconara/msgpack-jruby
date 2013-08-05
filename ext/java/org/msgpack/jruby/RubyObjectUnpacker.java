@@ -150,9 +150,8 @@ public class RubyObjectUnpacker {
 
   private IRubyObject convert(Ruby runtime, RawValue value, CompiledOptions options) {
     RubyString string = RubyString.newString(runtime, value.asRawValue().getByteArray());
-    if (options.encoding != null) {
-      string.setEncoding(options.encoding);
-    }
+    string.setEncoding((options.encoding != null) ? options.encoding : runtime.getDefaultExternalEncoding());
+    string.encode_bang(runtime.getCurrentContext());
     return string;
   }
 }
