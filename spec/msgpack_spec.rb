@@ -68,6 +68,24 @@ describe MessagePack do
     end
   end
 
+  context 'with different external encoding', :encodings do
+    before do
+      @default_external = Encoding.default_external
+      @default_internal = Encoding.default_internal
+      Encoding.default_external = Encoding::UTF_8
+      Encoding.default_internal = Encoding::ISO_8859_1
+    end
+
+    after do
+      Encoding.default_external = @default_external
+      Encoding.default_internal = @default_internal
+    end
+
+    it 'transcodes strings when encoding' do
+      MessagePack.pack("sk\xE5l").should == "\xA5sk\xC3\xA5l"
+    end
+  end
+
   context 'with other things' do
     it 'raises an error on #pack with an unsupported type' do
       expect { MessagePack.pack(self) }.to raise_error(ArgumentError, /^Cannot pack type:/)

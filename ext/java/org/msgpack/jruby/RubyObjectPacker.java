@@ -3,9 +3,12 @@ package org.msgpack.jruby;
 
 import java.io.IOException;
 
+import org.jcodings.Encoding;
+
 import org.msgpack.MessagePack;
 import org.msgpack.packer.BufferPacker;
 
+import org.jruby.Ruby;
 import org.jruby.RubyObject;
 import org.jruby.RubyNil;
 import org.jruby.RubyBoolean;
@@ -80,6 +83,10 @@ public class RubyObjectPacker {
   }
 
   private void write(BufferPacker packer, RubyString str) throws IOException {
+    Ruby runtime = str.getRuntime();
+    if (str.getEncoding() != runtime.getDefaultExternalEncoding()) {
+      str = (RubyString) str.encode(runtime.getCurrentContext(), runtime.getEncodingService().getDefaultExternal());
+    }
     packer.write(str.getBytes());
   }
 
