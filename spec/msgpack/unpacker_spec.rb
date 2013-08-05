@@ -222,14 +222,14 @@ describe ::MessagePack::Unpacker do
         described_class.new(:encoding => 'UTF-8')
       end
 
-      it 'can symbolize keys when using #execute' do
+      it 'can hardcode encoding when using #execute' do
         unpacker.execute(buffer, 0)
         strings = flatten(unpacker.data).grep(String)
         strings.should == %w[hello world nested object structure]
         strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
       end
 
-      it 'can symbolize keys when using #each' do
+      it 'can hardcode encoding when using #each' do
         objs = []
         unpacker.feed(buffer)
         unpacker.each do |obj|
@@ -240,7 +240,7 @@ describe ::MessagePack::Unpacker do
         strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
       end
 
-      it 'can symbolize keys when using #feed_each' do
+      it 'can hardcode encoding when using #feed_each' do
         objs = []
         unpacker.feed_each(buffer) do |obj|
           objs << obj
