@@ -9,8 +9,8 @@ env:
   - JRUBY_OPTS=--1.9
   - JRUBY_OPTS=--2.0
 jdk:
-  - openjdk7
   - openjdk6
+  - openjdk7
 matrix:
   exclude:
     - rvm: jruby-1.6.8
@@ -19,3 +19,9 @@ matrix:
     - rvm: jruby-1.6.8
       jdk: openjdk7
       env: JRUBY_OPTS=--2.0
+    - rvm: jruby-head
+      jdk: openjdk6
+      env: JRUBY_OPTS=--1.8
+    - rvm: jruby-head
+      jdk: openjdk7
+      env: JRUBY_OPTS=--1.8
