@@ -107,15 +107,15 @@ public class MessagePackLibrary implements Library {
     @JRubyMethod(name = "initialize", optional = 2, visibility = PRIVATE)
     public IRubyObject initialize(ThreadContext ctx, IRubyObject[] args) {
       if (args.length == 0) {
-        options = new RubyObjectUnpacker.CompiledOptions();
+        options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime());
       } else if (args.length == 1 && args[0] instanceof RubyHash) {
-        options = new RubyObjectUnpacker.CompiledOptions((RubyHash) args[0]);
+        options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime(), (RubyHash) args[0]);
       } else if (args.length > 0) {
         setStream(ctx, args[0]);
         if (args.length > 2) {
-          options = new RubyObjectUnpacker.CompiledOptions((RubyHash) args[1]);
+          options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime(), (RubyHash) args[1]);
         } else {
-          options = new RubyObjectUnpacker.CompiledOptions();
+          options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime());
         }
       }
       return this;
