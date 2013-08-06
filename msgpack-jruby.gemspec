@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'http://github.com/iconara/msgpack-jruby'
   s.summary     = %q{MessagePack implementation for JRuby}
   s.description = %q{JRuby compatible MessagePack implementation that does not use FFI}
+  s.license     = 'Apache License 2.0'
 
   s.rubyforge_project = 'msgpack-jruby'
 
