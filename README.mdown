@@ -1,5 +1,7 @@
 # MessagePack for JRuby
 
+[![Build Status](https://travis-ci.org/iconara/msgpack-jruby.png?branch=master)](https://travis-ci.org/iconara/msgpack-jruby)
+
 A MessagePack implementation for JRuby, built on top of the MessagePack Java libraries. Faster and easier to use than using the C MessagePack gem in JRuby.
 
 ## Installation
