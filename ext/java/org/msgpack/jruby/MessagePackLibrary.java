@@ -58,9 +58,10 @@ public class MessagePackLibrary implements Library {
     private static RubyObjectPacker packer = new RubyObjectPacker(msgPack);
     private static RubyObjectUnpacker unpacker = new RubyObjectUnpacker(msgPack);
     
-    @JRubyMethod(module = true, required = 1)
-    public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject obj) throws IOException {
-      return packer.pack(obj);
+    @JRubyMethod(module = true, required = 1, optional = 1)
+    public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
+      RubyHash options = (args.length == 2) ? (RubyHash) args[1] : null;
+      return packer.pack(args[0], options);
     }
     
     @JRubyMethod(module = true, required = 1, optional = 1)

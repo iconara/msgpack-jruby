@@ -110,5 +110,10 @@ describe MessagePack do
       unpacked = MessagePack.unpack(packed, :encoding => Encoding::UTF_8)
       unpacked['hello'].encoding.should == Encoding::UTF_8
     end
+
+    it 'can pack strings with a specified encoding', :encodings do
+      packed = MessagePack.pack({'hello' => "w\xE5rld".force_encoding(Encoding::ISO_8859_1)}, :encoding => Encoding::UTF_8)
+      packed.index("w\xC3\xA5rld").should_not be_nil
+    end
   end
 end

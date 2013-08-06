@@ -20,7 +20,9 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.jruby.RubyEncoding;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.encoding.EncodingService;
 
 
 public class RubyObjectPacker {
@@ -30,17 +32,34 @@ public class RubyObjectPacker {
     this.msgPack = msgPack;
   }
 
-  public RubyString pack(IRubyObject o) throws IOException {
-    return RubyString.newString(o.getRuntime(), packRaw(o));
+  static class CompiledOptions {
+    public final Encoding encoding;
+
+    public CompiledOptions(Ruby runtime, RubyHash options) {
+      EncodingService encodingService = runtime.getEncodingService();
+      Encoding externalEncoding = null;
+      if (options != null) {
+        IRubyObject rubyEncoding = options.fastARef(runtime.newSymbol("encoding"));
+        externalEncoding = encodingService.getEncodingFromObject(rubyEncoding);
+      }
+      if (externalEncoding == null) {
+        externalEncoding = runtime.getDefaultExternalEncoding();
+      }
+      encoding = (externalEncoding != encodingService.getAscii8bitEncoding()) ? externalEncoding : null;
+    }
   }
 
-  public byte[] packRaw(IRubyObject o) throws IOException {
+  public RubyString pack(IRubyObject o, RubyHash options) throws IOException {
+    return RubyString.newString(o.getRuntime(), packRaw(o, new CompiledOptions(o.getRuntime(), options)));
+  }
+
+  byte[] packRaw(IRubyObject o, CompiledOptions options) throws IOException {
     BufferPacker packer = msgPack.createBufferPacker();
-    write(packer, o);
+    write(packer, o, options);
     return packer.toByteArray();
   }
 
-  private void write(BufferPacker packer, IRubyObject o) throws IOException {
+  private void write(BufferPacker packer, IRubyObject o, CompiledOptions options) throws IOException {
     if (o == null || o instanceof RubyNil) {
       packer.writeNil();
     } else if (o instanceof RubyBoolean) {
@@ -54,13 +73,13 @@ public class RubyObjectPacker {
     } else if (o instanceof RubyFloat) {
       write(packer, (RubyFloat) o);
     } else if (o instanceof RubyString) {
-      write(packer, (RubyString) o);
+      write(packer, (RubyString) o, options);
     } else if (o instanceof RubySymbol) {
-      write(packer, (RubySymbol) o);
+      write(packer, (RubySymbol) o, options);
     } else if (o instanceof RubyArray) {
-      write(packer, (RubyArray) o);
+      write(packer, (RubyArray) o, options);
     } else if (o instanceof RubyHash) {
-      write(packer, (RubyHash) o);
+      write(packer, (RubyHash) o, options);
     } else {
       throw o.getRuntime().newArgumentError(String.format("Cannot pack type: %s", o.getClass().getName()));
     }
@@ -82,35 +101,35 @@ public class RubyObjectPacker {
     packer.write(flt.getDoubleValue());
   }
 
-  private void write(BufferPacker packer, RubyString str) throws IOException {
-    Ruby runtime = str.getRuntime();
-    if (str.getEncoding() != runtime.getDefaultExternalEncoding()) {
-      str = (RubyString) str.encode(runtime.getCurrentContext(), runtime.getEncodingService().getDefaultExternal());
+  private void write(BufferPacker packer, RubyString str, CompiledOptions options) throws IOException {
+    if ((options.encoding != null) && (str.getEncoding() != options.encoding)) {
+      Ruby runtime = str.getRuntime();
+      str = (RubyString) str.encode(runtime.getCurrentContext(), RubyEncoding.newEncoding(runtime, options.encoding));
     }
     packer.write(str.getBytes());
   }
 
-  private void write(BufferPacker packer, RubySymbol sym) throws IOException {
-    write(packer, (RubyString) sym.to_s());
+  private void write(BufferPacker packer, RubySymbol sym, CompiledOptions options) throws IOException {
+    write(packer, sym.asString(), options);
   }
 
-  private void write(BufferPacker packer, RubyArray array) throws IOException {
+  private void write(BufferPacker packer, RubyArray array, CompiledOptions options) throws IOException {
     int count = array.size();
     packer.writeArrayBegin(count);
     for (int i = 0; i < count; i++) {
-      write(packer, (RubyObject) array.entry(i));
+      write(packer, (RubyObject) array.entry(i), options);
     }
     packer.writeArrayEnd();
   }
 
-  private void write(BufferPacker packer, RubyHash hash) throws IOException {
+  private void write(BufferPacker packer, RubyHash hash, CompiledOptions options) throws IOException {
     int count = hash.size();
     packer.writeMapBegin(count);
     RubyArray keys = hash.keys();
     RubyArray values = hash.rb_values();
     for (int i = 0; i < count; i++) {
-      write(packer, (RubyObject) keys.entry(i));
-      write(packer, (RubyObject) values.entry(i));
+      write(packer, (RubyObject) keys.entry(i), options);
+      write(packer, (RubyObject) values.entry(i), options);
     }
     packer.writeMapEnd();
   }
