@@ -197,7 +197,7 @@ public class MessagePackLibrary implements Library {
         }
         return ctx.getRuntime().getNil();
       } else {
-        return RubyEnumerator.RubyEnumeratorKernel.obj_to_enum(ctx, this);
+        return callMethod(ctx, "to_enum");
       }
     }
 
