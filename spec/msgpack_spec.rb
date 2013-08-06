@@ -82,7 +82,8 @@ describe MessagePack do
     end
 
     it 'transcodes strings when encoding' do
-      MessagePack.pack("sk\xE5l").should == "\xA5sk\xC3\xA5l"
+      input = "sk\xE5l".force_encoding(Encoding::ISO_8859_1)
+      MessagePack.pack(input).should == "\xA5sk\xC3\xA5l"
     end
   end
 
