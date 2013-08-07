@@ -53,6 +53,23 @@ public class RubyObjectPacker {
     return RubyString.newString(o.getRuntime(), packRaw(o, new CompiledOptions(o.getRuntime(), options)));
   }
 
+  @Deprecated
+  public byte[] packRaw(IRubyObject o) throws IOException {
+    if (o == null) {
+      return new byte[] { -64 };
+    } else {
+      return packRaw(o.getRuntime(), o);
+    }
+  }
+
+  public byte[] packRaw(Ruby runtime, IRubyObject o) throws IOException {
+    return packRaw(runtime, o, null);
+  }
+
+  public byte[] packRaw(Ruby runtime, IRubyObject o, RubyHash options) throws IOException {
+    return packRaw(o, new CompiledOptions(runtime, options));
+  }
+
   byte[] packRaw(IRubyObject o, CompiledOptions options) throws IOException {
     BufferPacker packer = msgPack.createBufferPacker();
     write(packer, o, options);

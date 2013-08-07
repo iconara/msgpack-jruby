@@ -70,6 +70,10 @@ public class RubyObjectUnpacker {
     return unpack(str.getRuntime(), str.getBytes(), new CompiledOptions(str.getRuntime(), options));
   }
 
+  public IRubyObject unpack(Ruby runtime, byte[] data) throws IOException {
+    return unpack(runtime, data, new CompiledOptions(runtime, null));
+  }
+
   public IRubyObject unpack(Ruby runtime, byte[] data, RubyHash options) throws IOException {
     return unpack(runtime, data, new CompiledOptions(runtime, options));
   }
