@@ -7,7 +7,9 @@ require 'msgpack/version'
 
 task :default => :spec
 
-RSpec::Core::RakeTask.new(:spec)
+RSpec::Core::RakeTask.new(:spec) do |r|
+  r.rspec_opts = '--tty'
+end
 
 task :spec => :package
 
