@@ -6,6 +6,18 @@ require 'spec_helper'
 
 
 describe ::MessagePack::Unpacker do
+  def flatten(struct, results = [])
+    case struct
+    when Array
+      struct.each { |v| flatten(v, results) }
+    when Hash
+      struct.each { |k, v| flatten(v, flatten(k, results)) }
+    else
+      results << struct
+    end
+    results
+  end
+
   subject do
     described_class.new
   end
@@ -168,6 +180,42 @@ describe ::MessagePack::Unpacker do
     end
   end
 
+  context 'encoding', :encodings do
+    before :all do
+      @default_internal = Encoding.default_internal
+      @default_external = Encoding.default_external
+    end
+
+    after :all do
+      Encoding.default_internal = @default_internal
+      Encoding.default_external = @default_external
+    end
+
+    let :buffer do
+      MessagePack.pack({'hello' => 'world', 'nested' => ['object', {"sk\xC3\xA5l".force_encoding('utf-8') => true}]})
+    end
+
+    let :unpacker do
+      described_class.new
+    end
+
+    before do
+      Encoding.default_internal = Encoding::UTF_8
+      Encoding.default_external = Encoding::ISO_8859_1
+    end
+
+    it 'produces results with default internal encoding' do
+      unpacker.execute(buffer, 0)
+      strings = flatten(unpacker.data).grep(String)
+      strings.map(&:encoding).uniq.should == [Encoding.default_internal]
+    end
+
+    it 'recodes to internal encoding' do
+      unpacker.execute(buffer, 0)
+      unpacker.data['nested'][1].keys.should == ["sk\xC3\xA5l".force_encoding(Encoding.default_internal)]
+    end
+  end
+
   context 'extensions' do
     context 'symbolized keys' do
       let :buffer do
@@ -202,18 +250,6 @@ describe ::MessagePack::Unpacker do
     end
 
     context 'encoding', :encodings do
-      def flatten(struct, results = [])
-        case struct
-        when Array
-          struct.each { |v| flatten(v, results) }
-        when Hash
-          struct.each { |k, v| flatten(v, flatten(k, results)) }
-        else
-          results << struct
-        end
-        results
-      end
-
       let :buffer do
         MessagePack.pack({'hello' => 'world', 'nested' => ['object', {'structure' => true}]})
       end
@@ -222,14 +258,14 @@ describe ::MessagePack::Unpacker do
         described_class.new(:encoding => 'UTF-8')
       end
 
-      it 'can symbolize keys when using #execute' do
+      it 'can hardcode encoding when using #execute' do
         unpacker.execute(buffer, 0)
         strings = flatten(unpacker.data).grep(String)
         strings.should == %w[hello world nested object structure]
         strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
       end
 
-      it 'can symbolize keys when using #each' do
+      it 'can hardcode encoding when using #each' do
         objs = []
         unpacker.feed(buffer)
         unpacker.each do |obj|
@@ -240,7 +276,7 @@ describe ::MessagePack::Unpacker do
         strings.map(&:encoding).uniq.should == [Encoding::UTF_8]
       end
 
-      it 'can symbolize keys when using #feed_each' do
+      it 'can hardcode encoding when using #feed_each' do
         objs = []
         unpacker.feed_each(buffer) do |obj|
           objs << obj
