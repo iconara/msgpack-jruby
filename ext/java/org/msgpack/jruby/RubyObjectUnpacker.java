@@ -85,8 +85,7 @@ public class RubyObjectUnpacker {
     // MessagePackBufferUnpacker unpacker = new MessagePackBufferUnpacker(msgPack);
     // unpacker.wrap(data);
     // return valueToRubyObject(runtime, unpacker.readValue(), options);
-    Decoder decoder = new Decoder(runtime, data, options);
-    return decoder.next();
+    return new Decoder(runtime, data).next();
   }
 
   IRubyObject valueToRubyObject(Ruby runtime, Value value, RubyHash options) throws IOException {
@@ -174,16 +173,14 @@ public class RubyObjectUnpacker {
   private static class Decoder {
     private final Ruby runtime;
     private final byte[] buffer;
-    private final CompiledOptions options;
     private final Encoding binaryEncoding;
     private final Encoding utf8Encoding;
 
     private int offset;
 
-    public Decoder(Ruby runtime, byte[] buffer, CompiledOptions options) {
+    public Decoder(Ruby runtime, byte[] buffer) {
       this.runtime = runtime;
       this.buffer = buffer;
-      this.options = options;
       this.offset = 0;
       this.binaryEncoding = runtime.getEncodingService().getAscii8bitEncoding();
       this.utf8Encoding = UTF8Encoding.INSTANCE;
