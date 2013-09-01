@@ -28,6 +28,7 @@ import org.jruby.RubySymbol;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.encoding.EncodingService;
 import org.jruby.runtime.ThreadContext;
 
 import org.jcodings.Encoding;
@@ -40,46 +41,51 @@ public class RubyObjectUnpacker {
     this.msgPack = msgPack;
   }
 
-  public static class CompiledOptions {
+  static class CompiledOptions {
     public final boolean symbolizeKeys;
     public final Encoding encoding;
 
-    public CompiledOptions() {
-      this(null);
+    public CompiledOptions(Ruby runtime) {
+      this(runtime, null);
     }
 
-    public CompiledOptions(RubyHash options) {
+    public CompiledOptions(Ruby runtime, RubyHash options) {
+      EncodingService encodingService = runtime.getEncodingService();
+      Encoding externalEncoding = null;
       if (options == null) {
         symbolizeKeys = false;
-        encoding = null;
       } else {
-        Ruby runtime = options.getRuntime();
         ThreadContext ctx = runtime.getCurrentContext();
         RubySymbol key = runtime.newSymbol("symbolize_keys");
         IRubyObject value = options.fastARef(key);
         symbolizeKeys = value != null && value.isTrue();
         IRubyObject rubyEncoding = options.fastARef(runtime.newSymbol("encoding"));
-        encoding = runtime.getEncodingService().getEncodingFromObject(rubyEncoding);
+        externalEncoding = encodingService.getEncodingFromObject(rubyEncoding);
       }
+      encoding = (externalEncoding != null) ? externalEncoding : runtime.getDefaultExternalEncoding();
     }
   }
 
   public IRubyObject unpack(RubyString str, RubyHash options) throws IOException {
-    return unpack(str.getRuntime(), str.getBytes(), new CompiledOptions(options));
+    return unpack(str.getRuntime(), str.getBytes(), new CompiledOptions(str.getRuntime(), options));
+  }
+
+  public IRubyObject unpack(Ruby runtime, byte[] data) throws IOException {
+    return unpack(runtime, data, new CompiledOptions(runtime, null));
   }
 
   public IRubyObject unpack(Ruby runtime, byte[] data, RubyHash options) throws IOException {
-    return unpack(runtime, data, new CompiledOptions(options));
+    return unpack(runtime, data, new CompiledOptions(runtime, options));
   }
 
-  public IRubyObject unpack(Ruby runtime, byte[] data, CompiledOptions options) throws IOException {
+  IRubyObject unpack(Ruby runtime, byte[] data, CompiledOptions options) throws IOException {
     MessagePackBufferUnpacker unpacker = new MessagePackBufferUnpacker(msgPack);
     unpacker.wrap(data);
     return valueToRubyObject(runtime, unpacker.readValue(), options);
   }
 
   IRubyObject valueToRubyObject(Ruby runtime, Value value, RubyHash options) throws IOException {
-    return valueToRubyObject(runtime, value, new CompiledOptions(options));
+    return valueToRubyObject(runtime, value, new CompiledOptions(runtime, options));
   }
 
   IRubyObject valueToRubyObject(Ruby runtime, Value value, CompiledOptions options) {
@@ -150,9 +156,8 @@ public class RubyObjectUnpacker {
 
   private IRubyObject convert(Ruby runtime, RawValue value, CompiledOptions options) {
     RubyString string = RubyString.newString(runtime, value.asRawValue().getByteArray());
-    if (options.encoding != null) {
-      string.setEncoding(options.encoding);
-    }
+    string.setEncoding(options.encoding);
+    string.encode_bang(runtime.getCurrentContext());
     return string;
   }
 }

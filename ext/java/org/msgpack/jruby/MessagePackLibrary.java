@@ -58,9 +58,10 @@ public class MessagePackLibrary implements Library {
     private static RubyObjectPacker packer = new RubyObjectPacker(msgPack);
     private static RubyObjectUnpacker unpacker = new RubyObjectUnpacker(msgPack);
     
-    @JRubyMethod(module = true, required = 1)
-    public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject obj) throws IOException {
-      return packer.pack(obj);
+    @JRubyMethod(module = true, required = 1, optional = 1)
+    public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
+      RubyHash options = (args.length == 2) ? (RubyHash) args[1] : null;
+      return packer.pack(args[0], options);
     }
     
     @JRubyMethod(module = true, required = 1, optional = 1)
@@ -107,15 +108,15 @@ public class MessagePackLibrary implements Library {
     @JRubyMethod(name = "initialize", optional = 2, visibility = PRIVATE)
     public IRubyObject initialize(ThreadContext ctx, IRubyObject[] args) {
       if (args.length == 0) {
-        options = new RubyObjectUnpacker.CompiledOptions();
+        options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime());
       } else if (args.length == 1 && args[0] instanceof RubyHash) {
-        options = new RubyObjectUnpacker.CompiledOptions((RubyHash) args[0]);
+        options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime(), (RubyHash) args[0]);
       } else if (args.length > 0) {
         setStream(ctx, args[0]);
         if (args.length > 2) {
-          options = new RubyObjectUnpacker.CompiledOptions((RubyHash) args[1]);
+          options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime(), (RubyHash) args[1]);
         } else {
-          options = new RubyObjectUnpacker.CompiledOptions();
+          options = new RubyObjectUnpacker.CompiledOptions(ctx.getRuntime());
         }
       }
       return this;
