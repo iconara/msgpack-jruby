@@ -3,6 +3,7 @@ package org.msgpack.jruby;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 
 import org.msgpack.MessagePack;
 import org.msgpack.MessageTypeException;
@@ -172,7 +173,7 @@ public class RubyObjectUnpacker {
 
   private static class Decoder {
     private final Ruby runtime;
-    private final byte[] buffer;
+    private final ByteBuffer buffer;
     private final Encoding binaryEncoding;
     private final Encoding utf8Encoding;
 
@@ -180,79 +181,25 @@ public class RubyObjectUnpacker {
 
     public Decoder(Ruby runtime, byte[] buffer) {
       this.runtime = runtime;
-      this.buffer = buffer;
-      this.offset = 0;
+      this.buffer = ByteBuffer.wrap(buffer);
       this.binaryEncoding = runtime.getEncodingService().getAscii8bitEncoding();
       this.utf8Encoding = UTF8Encoding.INSTANCE;
     }
 
-    private int consumeUnsignedByte() {
-      return consumeSignedByte() & 0xff;
-    }
-
-    private int consumeSignedByte() {
-      int b = buffer[offset];
-      offset++;
-      return b;
-    }
-
-    private long consumeUnsignedInteger(int size) {
-      long n = 0;
-      for (int i = size - 1; i > 0; i--) {
-        long x = consumeUnsignedByte();
-        n |= x << (i * 8);
-      }
-      n |= consumeUnsignedByte();
-      return n;
-    }
-
-    private long consumeSignedInteger(int size) {
-      long n = 0;
-      for (int i = size - 1; i > 0; i--) {
-        long x = consumeSignedByte();
-        n |= x << (i * 8);
-      }
-      n |= consumeSignedByte();
-      return n;
-    }
-
-    private IRubyObject consumeRubyUnsignedInteger(int size) {
-      if (size == 8 && (buffer[offset] & 0x80) == 0x80) {
-        return consumeBignum(1);
+    private IRubyObject consumeUnsignedLong() {
+      long value = buffer.getLong();
+      if (value < 0) {
+        return RubyBignum.newBignum(runtime, BigInteger.valueOf(value & ((1L<<63)-1)).setBit(63));
       } else {
-        return runtime.newFixnum(consumeUnsignedInteger(size));
+        return runtime.newFixnum(value);
       }
-    }
-
-    private IRubyObject consumeRubySignedInteger(int size) {
-      if (size == 8 && (buffer[offset] & 0x80) == 0x80) {
-        return consumeBignum(-1);
-      } else {
-        return runtime.newFixnum(consumeSignedInteger(size));
-      }
-    }
-
-    private IRubyObject consumeBignum(int sign) {
-      byte[] bytes = new byte[8];
-      System.arraycopy(buffer, offset, bytes, 0, 8);
-      offset += 8;
-      return RubyBignum.newBignum(runtime, new BigInteger(sign, bytes));
     }
 
     private IRubyObject consumeString(int size, Encoding encoding) {
       byte[] bytes = new byte[size];
-      System.arraycopy(buffer, offset, bytes, 0, size);
-      offset += size;
+      buffer.get(bytes);
       ByteList byteList = new ByteList(bytes, encoding);
       return runtime.newString(byteList);
-    }
-
-    private IRubyObject consumeRubyFloat(int size) {
-      if (size == 4) {
-        return runtime.newFloat(Float.intBitsToFloat((int) consumeUnsignedInteger(4)));
-      } else {
-        return runtime.newFloat(Double.longBitsToDouble(consumeUnsignedInteger(8)));
-      }
     }
 
     private IRubyObject consumeArray(int size) {
@@ -272,31 +219,31 @@ public class RubyObjectUnpacker {
     }
 
     public IRubyObject next() {
-      int b = consumeUnsignedByte();
+      int b = buffer.get() & 0xff;
       switch (b) {
       case 0xc0: return runtime.getNil();
       case 0xc2: return runtime.newBoolean(false);
       case 0xc3: return runtime.newBoolean(true);
-      case 0xc4: return consumeString((int) consumeUnsignedInteger(1), binaryEncoding);
-      case 0xc5: return consumeString((int) consumeUnsignedInteger(2), binaryEncoding);
-      case 0xc6: return consumeString((int) consumeUnsignedInteger(4), binaryEncoding);
-      case 0xca: return consumeRubyFloat(4);
-      case 0xcb: return consumeRubyFloat(8);
-      case 0xcc: return consumeRubyUnsignedInteger(1);
-      case 0xcd: return consumeRubyUnsignedInteger(2);
-      case 0xce: return consumeRubyUnsignedInteger(4);
-      case 0xcf: return consumeRubyUnsignedInteger(8);
-      case 0xd0: return consumeRubySignedInteger(1);
-      case 0xd1: return consumeRubySignedInteger(2);
-      case 0xd2: return consumeRubySignedInteger(4);
-      case 0xd3: return consumeRubySignedInteger(8);
-      case 0xd9: return consumeString((int) consumeUnsignedInteger(1), utf8Encoding);
-      case 0xda: return consumeString((int) consumeUnsignedInteger(2), utf8Encoding);
-      case 0xdb: return consumeString((int) consumeUnsignedInteger(4), utf8Encoding);
-      case 0xdc: return consumeArray((int) consumeUnsignedInteger(2));
-      case 0xdd: return consumeArray((int) consumeUnsignedInteger(4));
-      case 0xde: return consumeHash((int) consumeUnsignedInteger(2));
-      case 0xdf: return consumeHash((int) consumeUnsignedInteger(4));
+      case 0xc4: return consumeString(buffer.get() & 0xff, binaryEncoding);
+      case 0xc5: return consumeString(buffer.getShort() & 0xffff, binaryEncoding);
+      case 0xc6: return consumeString(buffer.getInt(), binaryEncoding);
+      case 0xca: return runtime.newFloat(buffer.getFloat());
+      case 0xcb: return runtime.newFloat(buffer.getDouble());
+      case 0xcc: return runtime.newFixnum(buffer.get() & 0xffL);
+      case 0xcd: return runtime.newFixnum(buffer.getShort() & 0xffffL);
+      case 0xce: return runtime.newFixnum(buffer.getInt() & 0xffffffffL);
+      case 0xcf: return consumeUnsignedLong();
+      case 0xd0: return runtime.newFixnum(buffer.get());
+      case 0xd1: return runtime.newFixnum(buffer.getShort());
+      case 0xd2: return runtime.newFixnum(buffer.getInt());
+      case 0xd3: return runtime.newFixnum(buffer.getLong());
+      case 0xd9: return consumeString(buffer.get() & 0xff, utf8Encoding);
+      case 0xda: return consumeString(buffer.getShort() & 0xffff, utf8Encoding);
+      case 0xdb: return consumeString(buffer.getInt(), utf8Encoding);
+      case 0xdc: return consumeArray(buffer.getShort() & 0xffff);
+      case 0xdd: return consumeArray(buffer.getInt());
+      case 0xde: return consumeHash(buffer.getShort() & 0xffff);
+      case 0xdf: return consumeHash(buffer.getInt());
       default:
         if (b <= 0x7f) {
           return runtime.newFixnum(b);
