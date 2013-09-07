@@ -82,10 +82,9 @@ public class RubyObjectUnpacker {
   }
 
   IRubyObject unpack(Ruby runtime, byte[] data, CompiledOptions options) throws IOException {
-    // MessagePackBufferUnpacker unpacker = new MessagePackBufferUnpacker(msgPack);
-    // unpacker.wrap(data);
-    // return valueToRubyObject(runtime, unpacker.readValue(), options);
-    return new Decoder(runtime, data).next();
+    MessagePackBufferUnpacker unpacker = new MessagePackBufferUnpacker(msgPack);
+    unpacker.wrap(data);
+    return valueToRubyObject(runtime, unpacker.readValue(), options);
   }
 
   IRubyObject valueToRubyObject(Ruby runtime, Value value, RubyHash options) throws IOException {

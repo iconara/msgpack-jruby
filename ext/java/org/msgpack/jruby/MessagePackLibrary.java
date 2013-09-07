@@ -31,9 +31,7 @@ public class MessagePackLibrary implements Library {
 
   @JRubyModule(name = "MessagePack")
   public static class MessagePackModule {
-    private static MessagePack msgPack = new MessagePack();
-    private static RubyObjectPacker packer = new RubyObjectPacker(msgPack);
-    private static RubyObjectUnpacker unpacker = new RubyObjectUnpacker(msgPack);
+    private static RubyObjectPacker packer = new RubyObjectPacker(new MessagePack());
     
     @JRubyMethod(module = true, required = 1, optional = 1, alias = {"dump"})
     public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
@@ -43,9 +41,8 @@ public class MessagePackLibrary implements Library {
     
     @JRubyMethod(module = true, required = 1, optional = 1, alias = {"load"})
     public static IRubyObject unpack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
-      RubyHash options = (args.length == 2) ? (RubyHash) args[1] : null;
-      RubyString str = args[0].asString();
-      return unpacker.unpack(str, options);
+      Decoder decoder = new Decoder(ctx.getRuntime(), args[0].asString().getBytes());
+      return decoder.next();
     }
   }
 }
