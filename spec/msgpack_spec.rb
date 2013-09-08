@@ -90,40 +90,54 @@ describe MessagePack do
   tests.each do |ctx, its|
     context("with #{ctx}") do
       its.each do |desc, unpacked, packeds|
-        it("encodes #{desc}") do
+        it "encodes #{desc}" do
           encoded = MessagePack.pack(unpacked)
           Array(packeds).should include(encoded), "expected #{encoded.inspect[0, 100]} to be one of #{Array(packeds).map {|x| x.inspect[0, 100] }*', '}"
         end
 
-        it "decodes #{desc}" do
-          Array(packeds).each do |packed|
-            decoded = MessagePack.unpack(packed)
-            if packed.getbyte(0) == 0xca
+        if Array(packeds).any? { |packed| packed.getbyte(0) == 0xca }
+          it "decodes #{desc} with reasonable exactness" do
+            Array(packeds).each do |packed|
+              decoded = MessagePack.unpack(packed)
               decoded.should be_within(0.00001).of(unpacked)
-            else
-              if ctx == 'strings'
-                decoded.should eql(unpacked.encode(Encoding::UTF_8)), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
-              else
-                decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
-              end
-              if ctx == 'strings'
-                decoded.encoding.should eql(Encoding::UTF_8)
-              elsif ctx == 'binaries'
-                decoded.encoding.should eql(Encoding::BINARY)
-              end
+            end
+          end
+        elsif ctx == 'strings'
+          it "decodes #{desc} as UTF-8" do
+            Array(packeds).each do |packed|
+              decoded = MessagePack.unpack(packed)
+              decoded.should eql(unpacked.encode(Encoding::UTF_8)), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
+              decoded.encoding.should eql(Encoding::UTF_8)
+            end
+          end
+        elsif ctx == 'binaries'
+          it "decodes #{desc} as binary" do
+            Array(packeds).each do |packed|
+              decoded = MessagePack.unpack(packed)
+              decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
+              decoded.encoding.should eql(Encoding::BINARY)
+            end
+          end
+        else
+          it "decodes #{desc}" do
+            Array(packeds).each do |packed|
+              decoded = MessagePack.unpack(packed)
+              decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
             end
           end
         end
 
-        it "decodes encoded #{desc} back" do
-          if ctx == 'strings'
-            MessagePack.unpack(MessagePack.pack(unpacked)).should eql(unpacked.encode(Encoding::UTF_8))
-          else
-            MessagePack.unpack(MessagePack.pack(unpacked)).should eql(unpacked)
+        it "decodes encoded #{desc} back again" do
+          Array(packeds).each do |packed|
+            if ctx == 'strings'
+              MessagePack.unpack(MessagePack.pack(unpacked)).should eql(unpacked.encode(Encoding::UTF_8))
+            else
+              MessagePack.unpack(MessagePack.pack(unpacked)).should eql(unpacked)
+            end
           end
         end
 
-        it "encodes decoded #{desc} back" do
+        it "encodes decoded #{desc} back again" do
           Array(packeds).each do |packed|
             packeds.should include(MessagePack.pack(MessagePack.unpack(packed)))
           end
