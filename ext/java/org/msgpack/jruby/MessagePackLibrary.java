@@ -35,8 +35,8 @@ public class MessagePackLibrary implements Library {
     
     @JRubyMethod(module = true, required = 1, optional = 1, alias = {"dump"})
     public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
-      RubyHash options = (args.length == 2) ? (RubyHash) args[1] : null;
-      return packer.pack(args[0], options);
+      Encoder encoder = new Encoder(ctx.getRuntime());
+      return encoder.encode(args[0]);
     }
     
     @JRubyMethod(module = true, required = 1, optional = 1, alias = {"load"})
