@@ -142,8 +142,13 @@ describe MessagePack do
     end
     
     it 'rasies an error on #unpack with garbage' do
-      pending
-      expect { MessagePack.unpack('asdka;sd') }.to raise_error(MessagePack::UnpackError)
+      expect { MessagePack.unpack("\xc1") }.to raise_error(MessagePack::UnpackError)
+    end
+
+    it 'rasies an error when not all data is consumed by the decoding' do
+      pending 'this is how the msgpack gem works' do
+        expect { MessagePack.unpack("\xc0\xc0") }.to raise_error(MessagePack::UnpackError)
+      end
     end
   end
 
