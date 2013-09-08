@@ -87,9 +87,10 @@ describe MessagePack do
             decoded.should be_within(0.00001).of(unpacked)
           else
             if ctx == 'strings'
-              unpacked.encode!(Encoding::UTF_8)
+              decoded.should eql(unpacked.encode(Encoding::UTF_8)), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
+            else
+              decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
             end
-            decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
             if ctx == 'strings'
               decoded.encoding.should eql(Encoding::UTF_8)
             elsif ctx == 'binaries'
