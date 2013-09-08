@@ -1,8 +1,6 @@
 package org.msgpack.jruby;
 
 
-import java.io.IOException;
-
 import org.jruby.Ruby;
 import org.jruby.RubyModule;
 import org.jruby.RubyClass;
@@ -19,7 +17,7 @@ import org.msgpack.MessagePack;
 
 
 public class MessagePackLibrary implements Library {
-  public void load(Ruby runtime, boolean wrap) throws IOException {
+  public void load(Ruby runtime, boolean wrap) {
     MessagePack msgPack = new MessagePack();
     RubyModule msgpackModule = runtime.defineModule("MessagePack");
     msgpackModule.defineAnnotatedMethods(MessagePackModule.class);
@@ -32,15 +30,15 @@ public class MessagePackLibrary implements Library {
   @JRubyModule(name = "MessagePack")
   public static class MessagePackModule {
     private static RubyObjectPacker packer = new RubyObjectPacker(new MessagePack());
-    
+
     @JRubyMethod(module = true, required = 1, optional = 1, alias = {"dump"})
-    public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
+    public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) {
       Encoder encoder = new Encoder(ctx.getRuntime());
       return encoder.encode(args[0]);
     }
-    
+
     @JRubyMethod(module = true, required = 1, optional = 1, alias = {"load"})
-    public static IRubyObject unpack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) throws IOException {
+    public static IRubyObject unpack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) {
       Decoder decoder = new Decoder(ctx.getRuntime(), args[0].asString().getBytes());
       return decoder.next();
     }
