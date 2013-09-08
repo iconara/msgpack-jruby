@@ -153,6 +153,10 @@ describe MessagePack do
   end
 
   context 'extensions' do
+    before do
+      pending 'Should this remain in v2.0?'
+    end
+
     it 'can unpack hashes with symbolized keys' do
       packed = MessagePack.pack({'hello' => 'world', 'nested' => ['object', {'structure' => true}]})
       unpacked = MessagePack.unpack(packed, :symbolize_keys => true)
