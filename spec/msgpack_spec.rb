@@ -142,6 +142,14 @@ describe MessagePack do
     end
   end
 
+  context 'with too large integers' do
+    [-2**63 - 1, 2**64].each do |bignum|
+      it "cannot encode #{bignum}" do
+        expect { MessagePack.pack(bignum) }.to raise_error(ArgumentError, /^Cannot pack big integer/)
+      end
+    end
+  end
+
   context 'with symbols' do
     it 'encodes symbols as strings' do
       MessagePack.pack(:symbol).should == "\xA6symbol"
