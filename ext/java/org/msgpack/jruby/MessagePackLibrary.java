@@ -13,26 +13,21 @@ import org.jruby.anno.JRubyModule;
 import org.jruby.anno.JRubyMethod;
 
 
-import org.msgpack.MessagePack;
-
-
 public class MessagePackLibrary implements Library {
   public void load(Ruby runtime, boolean wrap) {
-    MessagePack msgPack = new MessagePack();
     RubyModule msgpackModule = runtime.defineModule("MessagePack");
     msgpackModule.defineAnnotatedMethods(MessagePackModule.class);
     RubyClass standardErrorClass = runtime.getStandardError();
     RubyClass unpackErrorClass = msgpackModule.defineClassUnder("UnpackError", standardErrorClass, standardErrorClass.getAllocator());
+    RubyClass underflowErrorClass = msgpackModule.defineClassUnder("UnderflowError", unpackErrorClass, unpackErrorClass.getAllocator());
     RubyClass extensionValueClass = msgpackModule.defineClassUnder("ExtensionValue", runtime.getObject(), new ExtensionValue.ExtensionValueAllocator());
     extensionValueClass.defineAnnotatedMethods(ExtensionValue.class);
-    RubyClass unpackerClass = msgpackModule.defineClassUnder("Unpacker", runtime.getObject(), new Unpacker.UnpackerAllocator(msgPack));
+    RubyClass unpackerClass = msgpackModule.defineClassUnder("Unpacker", runtime.getObject(), new Unpacker.UnpackerAllocator());
     unpackerClass.defineAnnotatedMethods(Unpacker.class);
   }
 
   @JRubyModule(name = "MessagePack")
   public static class MessagePackModule {
-    private static RubyObjectPacker packer = new RubyObjectPacker(new MessagePack());
-
     @JRubyMethod(module = true, required = 1, optional = 1, alias = {"dump"})
     public static IRubyObject pack(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) {
       Encoder encoder = new Encoder(ctx.getRuntime());
