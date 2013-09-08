@@ -70,6 +70,16 @@ describe MessagePack do
       ['hashes with mixed keys and values', {utf8('foo') => utf8('bar'), 3 => utf8('three'), utf8('four') => 4, utf8('x') => [utf8('y')], utf8('a') => utf8('b')}, "\x85\xa3foo\xa3bar\x03\xa5three\xa4four\x04\xa1x\x91\xa1y\xa1a\xa1b"],
       ['hashes of hashes', {{utf8('x') => {utf8('y') => utf8('z')}} => utf8('s')}, "\x81\x81\xa1x\x81\xa1y\xa1z\xa1s"],
       ['hashes with nils', {utf8('foo') => nil}, "\x81\xa3foo\xc0"]
+    ],
+    'extensions' => [
+      ['micro fixed extensions', MessagePack::ExtensionValue.new(1, "\x00"), "\xd4\x01\x00"],
+      ['tiny fixed extensions', MessagePack::ExtensionValue.new(1, "\x00\x00"), "\xd5\x01\x00\x00"],
+      ['small fixed extensions', MessagePack::ExtensionValue.new(1, "\x00" * 4), "\xd6\x01\x00\x00\x00\x00"],
+      ['medium fixed extensions', MessagePack::ExtensionValue.new(1, "\x00" * 8), "\xd7\x01\x00\x00\x00\x00\x00\x00\x00\x00"],
+      ['big fixed extensions', MessagePack::ExtensionValue.new(1, "\x00" * 16), "\xd8\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"],
+      ['small variable extensions', MessagePack::ExtensionValue.new(3, "\x00" * 5), "\xc7\x05\x03\x00\x00\x00\x00\x00"],
+      ['medium variable extensions', MessagePack::ExtensionValue.new(3, "\x00" * 0x101), "\xc8\x01\x01\x03#{"\x00" * 0x101}"],
+      ['big variable extensions', MessagePack::ExtensionValue.new(3, "\x00" * 0x10001), "\xc9\x00\x01\x00\x01\x03#{"\x00" * 0x10001}"],
     ]
   }
 

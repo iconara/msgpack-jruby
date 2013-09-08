@@ -23,6 +23,8 @@ public class MessagePackLibrary implements Library {
     msgpackModule.defineAnnotatedMethods(MessagePackModule.class);
     RubyClass standardErrorClass = runtime.getStandardError();
     RubyClass unpackErrorClass = msgpackModule.defineClassUnder("UnpackError", standardErrorClass, standardErrorClass.getAllocator());
+    RubyClass extensionValueClass = msgpackModule.defineClassUnder("ExtensionValue", runtime.getObject(), new ExtensionValue.ExtensionValueAllocator());
+    extensionValueClass.defineAnnotatedMethods(ExtensionValue.class);
     RubyClass unpackerClass = msgpackModule.defineClassUnder("Unpacker", runtime.getObject(), new Unpacker.UnpackerAllocator(msgPack));
     unpackerClass.defineAnnotatedMethods(Unpacker.class);
   }

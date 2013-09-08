@@ -80,6 +80,8 @@ public class Encoder {
       encodeArray((RubyArray) object);
     } else if (object instanceof RubyHash) {
       encodeHash((RubyHash) object);
+    } else if (object.respondsTo("to_msgpack")) {
+      appendCustom(object);
     } else {
       throw runtime.newArgumentError(String.format("Cannot pack type: %s", object.getClass().getName()));
     }
@@ -221,5 +223,13 @@ public class Encoder {
       encodeObject(keys.entry(i));
       encodeObject(values.entry(i));
     }
+  }
+
+  private void appendCustom(IRubyObject object) {
+    RubyString string = (RubyString) object.callMethod(runtime.getCurrentContext(), "to_msgpack");
+    ByteList bytes = string.getByteList();
+    int length = bytes.length();
+    ensureCapacity(length);
+    buffer.put(bytes.unsafeBytes(), bytes.begin(), length);
   }
 }
