@@ -42,7 +42,7 @@ describe MessagePack do
     ],
     'strings' => [
       ['strings', utf8('hello world'), "\xabhello world"],
-      ['non-UTF-8 strings', 'olé'.encode(Encoding::ISO_8859_1), "\xa4\x6f\x6c\xc3\xa9"],
+      ['non-UTF-8 strings', "ol\xE9".force_encoding(Encoding::ISO_8859_1), "\xa4ol\xc3\xa9"],
       ['empty strings', utf8(''), "\xa0"],
       ['medium strings', utf8('x' * 0xdd), "\xd9\xdd#{'x' * 0xdd}"],
       ['big strings', utf8('x' * 0xdddd), "\xda\xdd\xdd#{'x' * 0xdddd}"],
