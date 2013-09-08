@@ -98,6 +98,18 @@ describe MessagePack do
             end
           end
         end
+
+        it "decodes encoded #{desc} back" do
+          if ctx == 'strings'
+            MessagePack.unpack(MessagePack.pack(unpacked)).should eql(unpacked.encode(Encoding::UTF_8))
+          else
+            MessagePack.unpack(MessagePack.pack(unpacked)).should eql(unpacked)
+          end
+        end
+
+        it "encodes decoded #{desc} back" do
+          MessagePack.pack(MessagePack.unpack(packed)).should eql(packed)
+        end
       end
     end
   end
