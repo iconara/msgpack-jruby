@@ -4,6 +4,14 @@ require 'spec_helper'
 
 
 describe MessagePack do
+  def self.utf8(str)
+    str.force_encoding(Encoding::UTF_8)
+  end
+
+  def self.make_hash(size)
+    Hash[Array.new(size) { |i| [i.to_s(16).rjust(4, '0'), true] }]
+  end
+
   tests = {
     'constant values' => [
       ['true', true, "\xc3"],
@@ -27,40 +35,41 @@ describe MessagePack do
       ['large integers', 2**31 - 1, "\xce\x7f\xff\xff\xff"],
       ['huge integers', 2**64 - 1, "\xcf\xff\xff\xff\xff\xff\xff\xff\xff"],
       ['negative integers', -1, "\xff"],
-      ['1.0', 1.0, "\xcb\x3f\xf0\x00\x00\x00\x00\x00\x00"],
+      ['1.0', 1.0, "\xca\x3f\x80\x00\x00"],
       ['small floats', 3.14, "\xca@H\xf5\xc3"],
       ['big floats', Math::PI * 1_000_000_000_000_000_000, "\xcbC\xc5\xcc\x96\xef\xd1\x19%"],
       ['negative floats', -2.1, "\xcb\xc0\x00\xcc\xcc\xcc\xcc\xcc\xcd"],
     ],
     'strings' => [
-      ['strings', 'hello world', "\xabhello world"],
-      ['empty strings', '', "\xa0"],
-      ['medium strings', 'x' * 0xdd, "\xd9\xdd#{'x' * 0xdd}"],
-      ['big strings', 'x' * 0xdddd, "\xda\xdd\xdd#{'x' * 0xdddd}"],
-      ['huge strings', 'x' * 0x0000dddd, "\xdb\x00\x00\xdd\xdd#{'x' * 0x0000dddd}"],
+      ['strings', utf8('hello world'), "\xabhello world"],
+      ['non-UTF-8 strings', 'olé'.encode(Encoding::ISO_8859_1), "\xa4\x6f\x6c\xc3\xa9"],
+      ['empty strings', utf8(''), "\xa0"],
+      ['medium strings', utf8('x' * 0xdd), "\xd9\xdd#{'x' * 0xdd}"],
+      ['big strings', utf8('x' * 0xdddd), "\xda\xdd\xdd#{'x' * 0xdddd}"],
+      ['huge strings', utf8('x' * 0x10000), "\xdb\x00\x01\x00\x00#{'x' * 0x10000}"],
     ],
     'binaries' => [
-      ['medium binary', "\a" * 0x5, "\xc4\x05#{"\a" * 0x5}"],
-      ['big binary', "\a" * 0x100, "\xc5\x01\x00#{"\a" * 0x100}"],
-      ['huge binary', "\a" * 0x10000, "\xc6\x00\x01\x00\x00#{"\a" * 0x10000}"],
+      ['medium binary', ("\a" * 0x5), "\xc4\x05#{"\a" * 0x5}"],
+      ['big binary', ("\a" * 0x100), "\xc5\x01\x00#{"\a" * 0x100}"],
+      ['huge binary', ("\a" * 0x10000), "\xc6\x00\x01\x00\x00#{"\a" * 0x10000}"],
     ],
     'arrays' => [
       ['empty arrays', [], "\x90"],
       ['small arrays', [1, 2], "\x92\x01\x02"],
       ['medium arrays', [false] * 0x111, "\xdc\x01\x11#{"\xc2" * 0x111}"],
       ['big arrays', [false] * 0x11111, "\xdd\x00\x01\x11\x11#{"\xc2" * 0x11111}"],
-      ['arrays with strings', ["hello", "world"], "\x92\xa5hello\xa5world"],
-      ['arrays with mixed values', ["hello", "world", 42], "\x93\xa5hello\xa5world*"],
+      ['arrays with strings', [utf8('hello'), utf8('world')], "\x92\xa5hello\xa5world"],
+      ['arrays with mixed values', [utf8('hello'), utf8('world'), 42], "\x93\xa5hello\xa5world*"],
       ['arrays of arrays', [[[[1, 2], 3], 4]], "\x91\x92\x92\x92\x01\x02\x03\x04"],
     ],
     'hashes' => [
       ['empty hashes', {}, "\x80"],
-      ['small hashes', {'foo' => 'bar'}, "\x81\xa3foo\xa3bar"],
-      ['medium hashes', {'foo' => 'bar'}, "\xde\x00\x01\xa3foo\xa3bar"],
-      ['big hashes', {'foo' => 'bar'}, "\xdf\x00\x00\x00\x01\xa3foo\xa3bar"],
-      ['hashes with mixed keys and values', {'foo' => 'bar', 3 => 'three', 'four' => 4, 'x' => ['y'], 'a' => 'b'}, "\x85\xa3foo\xa3bar\x03\xa5three\xa4four\x04\xa1x\x91\xa1y\xa1a\xa1b"],
-      ['hashes of hashes', {{'x' => {'y' => 'z'}} => 's'}, "\x81\x81\xa1x\x81\xa1y\xa1z\xa1s"],
-      ['hashes with nils', {'foo' => nil}, "\x81\xa3foo\xc0"]
+      ['small hashes', {utf8('foo') => utf8('bar')}, "\x81\xa3foo\xa3bar"],
+      ['medium hashes', make_hash(0x20), "\xde\x00\x20#{make_hash(0x20).map { |k, v| "\xa4#{k}\xc3" }.join('')}"],
+      ['big hashes', make_hash(0x10000), "\xdf\x00\x01\x00\x00#{make_hash(0x10000).map { |k, v| "\xa4#{k}\xc3" }.join('')}"],
+      ['hashes with mixed keys and values', {utf8('foo') => utf8('bar'), 3 => utf8('three'), utf8('four') => 4, utf8('x') => [utf8('y')], utf8('a') => utf8('b')}, "\x85\xa3foo\xa3bar\x03\xa5three\xa4four\x04\xa1x\x91\xa1y\xa1a\xa1b"],
+      ['hashes of hashes', {{utf8('x') => {utf8('y') => utf8('z')}} => utf8('s')}, "\x81\x81\xa1x\x81\xa1y\xa1z\xa1s"],
+      ['hashes with nils', {utf8('foo') => nil}, "\x81\xa3foo\xc0"]
     ]
   }
 
@@ -77,6 +86,9 @@ describe MessagePack do
           if packed.getbyte(0) == 0xca
             decoded.should be_within(0.00001).of(unpacked)
           else
+            if ctx == 'strings'
+              unpacked.encode!(Encoding::UTF_8)
+            end
             decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
             if ctx == 'strings'
               decoded.encoding.should eql(Encoding::UTF_8)
@@ -95,7 +107,7 @@ describe MessagePack do
     end
 
     it 'can pack with .dump' do
-      MessagePack.dump('hello world').should == "\xABhello world"
+      MessagePack.dump('hello world'.force_encoding(::Encoding::UTF_8)).should == "\xABhello world"
     end
   end
 
