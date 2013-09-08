@@ -85,26 +85,28 @@ describe MessagePack do
 
   tests.each do |ctx, its|
     context("with #{ctx}") do
-      its.each do |desc, unpacked, packed|
+      its.each do |desc, unpacked, packeds|
         it("encodes #{desc}") do
           encoded = MessagePack.pack(unpacked)
-          encoded.should eql(packed), "expected #{encoded.inspect[0, 100]} to equal #{packed.inspect[0, 100]}"
+          Array(packeds).should include(encoded), "expected #{encoded.inspect[0, 100]} to be one of #{Array(packeds).map {|x| x.inspect[0, 100] }*', '}"
         end
 
         it "decodes #{desc}" do
-          decoded = MessagePack.unpack(packed)
-          if packed.getbyte(0) == 0xca
-            decoded.should be_within(0.00001).of(unpacked)
-          else
-            if ctx == 'strings'
-              decoded.should eql(unpacked.encode(Encoding::UTF_8)), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
+          Array(packeds).each do |packed|
+            decoded = MessagePack.unpack(packed)
+            if packed.getbyte(0) == 0xca
+              decoded.should be_within(0.00001).of(unpacked)
             else
-              decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
-            end
-            if ctx == 'strings'
-              decoded.encoding.should eql(Encoding::UTF_8)
-            elsif ctx == 'binaries'
-              decoded.encoding.should eql(Encoding::BINARY)
+              if ctx == 'strings'
+                decoded.should eql(unpacked.encode(Encoding::UTF_8)), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
+              else
+                decoded.should eql(unpacked), "expected #{decoded.inspect[0, 100]} to equal #{unpacked.inspect[0, 100]}"
+              end
+              if ctx == 'strings'
+                decoded.encoding.should eql(Encoding::UTF_8)
+              elsif ctx == 'binaries'
+                decoded.encoding.should eql(Encoding::BINARY)
+              end
             end
           end
         end
@@ -118,7 +120,9 @@ describe MessagePack do
         end
 
         it "encodes decoded #{desc} back" do
-          MessagePack.pack(MessagePack.unpack(packed)).should eql(packed)
+          Array(packeds).each do |packed|
+            packeds.should include(MessagePack.pack(MessagePack.unpack(packed)))
+          end
         end
       end
     end
