@@ -36,7 +36,7 @@ describe MessagePack do
       ['huge integers', 2**64 - 1, "\xcf\xff\xff\xff\xff\xff\xff\xff\xff"],
       ['negative integers', -1, "\xff"],
       ['1.0', 1.0, "\xca\x3f\x80\x00\x00"],
-      ['small floats', 3.14, "\xca@H\xf5\xc3"],
+      ['small floats', 0.03125, "\xca\x3d\x00\x00\x00"],
       ['big floats', Math::PI * 1_000_000_000_000_000_000, "\xcbC\xc5\xcc\x96\xef\xd1\x19%"],
       ['negative floats', -2.1, "\xcb\xc0\x00\xcc\xcc\xcc\xcc\xcc\xcd"],
     ],
