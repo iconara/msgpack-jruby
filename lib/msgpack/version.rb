@@ -1,3 +1,3 @@
 module MessagePack
-  VERSION = '1.4.0pre0'
+  VERSION = '1.4.0.pre1'
 end
