@@ -1,4 +1,4 @@
-source :rubygems
+source 'http://bundler.rubygems.org/'
 
 gemspec
 
