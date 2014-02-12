@@ -1,11 +1,9 @@
 language: ruby
 bundler_args: --without development
 rvm:
-  - jruby-1.7.4
-  - jruby-1.7.6
+  - jruby
 env:
   - JRUBY_OPTS=--1.9
   - JRUBY_OPTS=--2.0
 jdk:
-  - openjdk6
   - openjdk7

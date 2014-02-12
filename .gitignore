@@ -1,5 +1,7 @@
 *.gem
-.bundle
-pkg/*
+/.bundle
+/.rvmrc
+/.ruby-version
+/.ruby-gemset
 /benchmark
 /lib/ext/msgpack_jruby.jar

@@ -1,2 +1,0 @@
-rvm use --create jruby-1.6.7@msgpack-jruby
-rvm use --create jruby-1.7.2@msgpack-jruby
