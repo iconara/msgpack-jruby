@@ -16,7 +16,6 @@ import org.jruby.RubyStringIO;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyEnumerator;
 import org.jruby.runtime.load.Library;
-import org.jruby.runtime.callback.Callback;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
