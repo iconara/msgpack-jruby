@@ -4,7 +4,7 @@ PATH
     msgpack-jruby (1.4.0.pre2-java)
 
 GEM
-  remote: http://rubygems.org/
+  remote: http://bundler.rubygems.org/
   specs:
     alf (0.10.1)
       highline (~> 1.6.2)
