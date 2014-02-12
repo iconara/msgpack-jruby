@@ -61,6 +61,16 @@ describe MessagePack do
       end
     end
   end
+
+  context 'using other names for .pack and .unpack' do
+    it 'can unpack with .load' do
+      MessagePack.load("\xABhello world").should == 'hello world'
+    end
+
+    it 'can pack with .dump' do
+      MessagePack.dump('hello world').should == "\xABhello world"
+    end
+  end
   
   context 'with symbols' do
     it 'encodes symbols as strings' do
