@@ -193,7 +193,7 @@ describe MessagePack do
     it 'raises an error on #pack with an unsupported type' do
       expect { MessagePack.pack(self) }.to raise_error(ArgumentError, /^Cannot pack type:/)
     end
-    
+
     it 'rasies an error on #unpack with garbage' do
       expect { MessagePack.unpack("\xc1") }.to raise_error(MessagePack::UnpackError)
     end
@@ -202,29 +202,6 @@ describe MessagePack do
       pending 'this is how the msgpack gem works' do
         expect { MessagePack.unpack("\xc0\xc0") }.to raise_error(MessagePack::UnpackError)
       end
-    end
-  end
-
-  context 'extensions' do
-    before do
-      pending 'Should this remain in v2.0?'
-    end
-
-    it 'can unpack hashes with symbolized keys' do
-      packed = MessagePack.pack({'hello' => 'world', 'nested' => ['object', {'structure' => true}]})
-      unpacked = MessagePack.unpack(packed, :symbolize_keys => true)
-      unpacked.should == {:hello => 'world', :nested => ['object', {:structure => true}]}
-    end
-
-    it 'can unpack strings with a specified encoding', :encodings do
-      packed = MessagePack.pack({'hello' => 'world'})
-      unpacked = MessagePack.unpack(packed, :encoding => Encoding::UTF_8)
-      unpacked['hello'].encoding.should == Encoding::UTF_8
-    end
-
-    it 'can pack strings with a specified encoding', :encodings do
-      packed = MessagePack.pack({'hello' => "w\xE5rld".force_encoding(Encoding::ISO_8859_1)}, :encoding => Encoding::UTF_8)
-      packed.index("w\xC3\xA5rld").should_not be_nil
     end
   end
 end
