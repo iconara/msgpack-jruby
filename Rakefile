@@ -25,7 +25,7 @@ end
 
 task :package => :compile do
   class_files = Dir['ext/java/**/*.class'].map { |path| path = path.sub('ext/java/', ''); "-C ext/java '#{path}'" }
-  system %(jar cf lib/ext/msgpack_jruby.jar #{class_files.join(' ')})
+  system %(mkdir -p lib/ext && jar cf lib/ext/msgpack_jruby.jar #{class_files.join(' ')})
   exit($?.exitstatus) unless $?.success?
 end
 
