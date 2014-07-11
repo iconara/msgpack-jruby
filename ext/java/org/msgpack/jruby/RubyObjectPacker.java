@@ -50,7 +50,7 @@ public class RubyObjectPacker {
   }
 
   public RubyString pack(IRubyObject o, RubyHash options) throws IOException {
-    return RubyString.newString(o.getRuntime(), packRaw(o, new CompiledOptions(o.getRuntime(), options)));
+    return RubyString.newStringNoCopy(o.getRuntime(), packRaw(o, new CompiledOptions(o.getRuntime(), options)));
   }
 
   @Deprecated

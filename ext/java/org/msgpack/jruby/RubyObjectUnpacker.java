@@ -155,7 +155,7 @@ public class RubyObjectUnpacker {
   }
 
   private IRubyObject convert(Ruby runtime, RawValue value, CompiledOptions options) {
-    RubyString string = RubyString.newString(runtime, value.asRawValue().getByteArray());
+    RubyString string = RubyString.newStringNoCopy(runtime, value.getByteArray());
     string.setEncoding(options.encoding);
     string.callMethod(runtime.getCurrentContext(), "encode!");
     return string;
