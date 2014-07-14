@@ -24,6 +24,7 @@ public class MessagePackLibrary implements Library {
     extensionValueClass.defineAnnotatedMethods(ExtensionValue.class);
     RubyClass unpackerClass = msgpackModule.defineClassUnder("Unpacker", runtime.getObject(), new Unpacker.UnpackerAllocator());
     unpackerClass.defineAnnotatedMethods(Unpacker.class);
+    CoreExtensions.load(runtime);
   }
 
   @JRubyModule(name = "MessagePack")
