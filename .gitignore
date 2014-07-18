@@ -7,3 +7,8 @@
 /lib/ext/msgpack_jruby.jar
 tmp/
 Gemfile.lock
+
+# for eclipse
+.classpath
+.project
+.settings/
