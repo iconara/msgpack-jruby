@@ -24,9 +24,9 @@ Gem::Specification.new do |s|
   s.files         = Dir['lib/**/*.rb', 'lib/**/*.jar']
   s.require_paths = %w(lib)
 
-  s.add_development_dependency 'rake', ['~> 10.0.2']
-  s.add_development_dependency 'rake-compiler', ['~> 0.8.3']
-  s.add_development_dependency 'rspec', ['~> 2.6.0']
+  s.add_development_dependency 'rake', ['~> 10.0']
+  s.add_development_dependency 'rake-compiler', ['~> 0.8']
+  s.add_development_dependency 'rspec', ['~> 2.6']
 
   s.add_development_dependency 'viiite', ['~> 0.1.0']
   s.add_development_dependency 'bson', ['~> 1.5.2']

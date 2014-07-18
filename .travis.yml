@@ -6,3 +6,4 @@ env:
   - JRUBY_OPTS=--2.0
 jdk:
   - openjdk7
+  - oraclejdk8

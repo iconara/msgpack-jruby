@@ -17,7 +17,7 @@ spec = eval File.read("msgpack-jruby.gemspec")
 
 require 'rake/javaextensiontask'
 Rake::JavaExtensionTask.new('msgpack_jruby', spec) do |ext|
-  ext.source_version = ext.target_version = 1.6
+  ext.source_version = ext.target_version = 1.7
   ext.ext_dir = 'ext/java'
   ext.lib_dir = 'lib/ext'
   ext.classpath = Dir['lib/ext/*.jar'].map { |x| File.expand_path x }.join File::PATH_SEPARATOR
