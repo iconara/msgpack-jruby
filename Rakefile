@@ -2,7 +2,7 @@ $: << 'lib'
 
 require 'bundler/setup'
 require 'rspec/core/rake_task'
-require 'msgpack/version'
+Bundler::GemHelper.install_tasks
 
 
 task :default => :spec
@@ -11,30 +11,16 @@ RSpec::Core::RakeTask.new(:spec) do |r|
   r.rspec_opts = '--tty'
 end
 
-task :spec => :package
+task :spec => :compile
 
-task :clean do
-  rm Dir['ext/java/**/*.class']
-end
+spec = eval File.read("msgpack-jruby.gemspec")
 
-task :compile do
-  classpath = (Dir["lib/ext/*.jar"] + ["#{ENV['MY_RUBY_HOME']}/lib/jruby.jar"]).join(':')
-  system %(javac -Xlint:-options -deprecation -source 1.6 -target 1.6 -cp #{classpath} ext/java/*.java ext/java/org/msgpack/jruby/*.java)
-  exit($?.exitstatus) unless $?.success?
-end
-
-task :package => :compile do
-  class_files = Dir['ext/java/**/*.class'].map { |path| path = path.sub('ext/java/', ''); "-C ext/java '#{path}'" }
-  system %(mkdir -p lib/ext && jar cf lib/ext/msgpack_jruby.jar #{class_files.join(' ')})
-  exit($?.exitstatus) unless $?.success?
-end
-
-task :release => :package do
-  version_string = "v#{MessagePack::VERSION}"
-  unless %x(git tag -l).split("\n").include?(version_string)
-    system %(git tag -a #{version_string} -m #{version_string})
-  end
-  system %(gem build msgpack-jruby.gemspec && gem push msgpack-jruby-*.gem && mv msgpack-jruby-*.gem pkg)
+require 'rake/javaextensiontask'
+Rake::JavaExtensionTask.new('msgpack_jruby', spec) do |ext|
+  ext.source_version = ext.target_version = 1.7
+  ext.ext_dir = 'ext/java'
+  ext.lib_dir = 'lib/ext'
+  ext.classpath = Dir['lib/ext/*.jar'].map { |x| File.expand_path x }.join File::PATH_SEPARATOR
 end
 
 namespace :benchmark do
