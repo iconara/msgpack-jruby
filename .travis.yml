@@ -7,3 +7,5 @@ matrix:
     - rvm: jruby
       env: JRUBY_OPTS=--2.0
     - rvm: jruby-head
+  allow_failures:
+    - rvm: jruby-head
