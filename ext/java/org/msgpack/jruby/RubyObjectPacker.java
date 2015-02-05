@@ -121,7 +121,7 @@ public class RubyObjectPacker {
   private void write(BufferPacker packer, RubyString str, CompiledOptions options) throws IOException {
     if ((options.encoding != null) && (str.getEncoding() != options.encoding)) {
       Ruby runtime = str.getRuntime();
-      str = (RubyString) str.encode(runtime.getCurrentContext(), RubyEncoding.newEncoding(runtime, options.encoding));
+      str = (RubyString) str.encode(runtime.getCurrentContext(), runtime.getEncodingService().getEncoding(options.encoding));
     }
     packer.write(str.getBytes());
   }
