@@ -1,3 +1,11 @@
+# This is not the MessagePack gem you are looking for
+
+This project has been merged into the [msgpack-ruby project](https://github.com/msgpack/msgpack-ruby) and is now a part of the [msgpack gem](https://rubygems.org/gems/msgpack).
+
+The msgpack-jruby gem will no longer be updated, all future development will go into the msgpack-ruby project to develop and maintain a single MessagePack library for all rubies.
+
+---
+
 # MessagePack for JRuby
 
 [![Build Status](https://travis-ci.org/iconara/msgpack-jruby.png?branch=master)](https://travis-ci.org/iconara/msgpack-jruby)
