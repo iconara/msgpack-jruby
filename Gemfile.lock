@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    msgpack-jruby (1.4.0-java)
+    msgpack-jruby (1.4.1-java)
 
 GEM
   remote: http://bundler.rubygems.org/
