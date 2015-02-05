@@ -12,7 +12,6 @@ import org.jruby.RubyString;
 import org.jruby.RubyObject;
 import org.jruby.RubyHash;
 import org.jruby.RubyIO;
-import org.jruby.RubyStringIO;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyEnumerator;
 import org.jruby.runtime.load.Library;
@@ -230,9 +229,9 @@ public class MessagePackLibrary implements Library {
     public IRubyObject setStream(ThreadContext ctx, IRubyObject stream) {
       bufferUnpacker = null;
       this.stream = stream;
-      if (stream instanceof RubyStringIO) {
-        // TODO: RubyStringIO returns negative numbers when read through IOInputStream#read
-        IRubyObject str = ((RubyStringIO) stream).string();
+      RubyClass stringio = ctx.getRuntime().getClass("StringIO");
+      if (stringio != null && stringio.isInstance(stream)) {
+        IRubyObject str = stream.callMethod(ctx, "string");
         byte[] bytes = ((RubyString) str).getBytes();
         streamUnpacker = new MessagePackUnpacker(msgPack, new ByteArrayInputStream(bytes));
       } else {
