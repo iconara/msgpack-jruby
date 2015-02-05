@@ -1,11 +1,10 @@
-source 'http://bundler.rubygems.org/'
+source 'http://rubygems.org/'
 
 gemspec
 
 gem 'rake'
 
 group :development do
-  gem 'jruby-openssl'
   gem 'viiite'
   gem 'ffi-ncurses'
   gem 'bson'

@@ -4,13 +4,12 @@ PATH
     msgpack-jruby (1.4.1-java)
 
 GEM
-  remote: http://bundler.rubygems.org/
+  remote: http://rubygems.org/
   specs:
     alf (0.10.1)
       highline (~> 1.6.2)
       myrrha (~> 1.2.1)
       quickl (~> 0.4.1)
-    bouncy-castle-java (1.5.0146.1)
     bson (1.5.2)
     bson (1.5.2-java)
     bson_ext (1.5.2)
@@ -22,8 +21,6 @@ GEM
       ffi (>= 0.6.3)
     gnuplot (2.3.6)
     highline (1.6.2)
-    jruby-openssl (0.7.4)
-      bouncy-castle-java
     json (1.5.0)
     json (1.5.0-java)
     msgpack (0.4.6)
@@ -51,7 +48,6 @@ DEPENDENCIES
   bson
   bson_ext
   ffi-ncurses
-  jruby-openssl
   json
   msgpack
   msgpack-jruby!
